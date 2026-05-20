@@ -57,3 +57,7 @@ INFO:     127.0.0.1:32866 - "POST /ingredients/ HTTP/1.1" 200 OK
 INFO:     127.0.0.1:41774 - "GET /recipes/ HTTP/1.1" 200 OK
 INFO:     127.0.0.1:41774 - "GET /planning/?start_date=2026-05-18&end_date=2026-05-24 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:35196 - "GET /recipes/ HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37369]

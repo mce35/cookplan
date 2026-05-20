@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Text, Table
 from sqlalchemy.orm import relationship
-from .database import Base
+from database import Base
 
 # Junction table for recipe dependencies
 recipe_dependencies = Table(

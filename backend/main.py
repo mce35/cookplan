@@ -168,8 +168,12 @@ def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(ge
 
     shopping_list = {} # ingredient_id -> {name, unit, quantity}
 
-    def add_recipe_to_list(recipe_id, multiplier=1):
+    def add_recipe_to_list(recipe_id, multiplier=1, visited=None):
         if not recipe_id: return
+        if visited is None: visited = set()
+        if recipe_id in visited: return
+        visited.add(recipe_id)
+
         recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
         if not recipe: return
 
@@ -180,7 +184,7 @@ def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(ge
             shopping_list[ing.id]["quantity"] += ri.quantity * multiplier
 
         for dep in recipe.dependencies:
-            add_recipe_to_list(dep.id, multiplier)
+            add_recipe_to_list(dep.id, multiplier, visited)
 
     for plan in plans:
         add_recipe_to_list(plan.main_recipe_id)

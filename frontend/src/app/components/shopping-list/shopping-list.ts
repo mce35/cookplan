@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ShoppingItem } from '../../models/models';
 
@@ -25,7 +26,10 @@ import { ShoppingItem } from '../../models/models';
         </div>
       </div>
 
-      <div *ngIf="items.length > 0" class="card">
+      <div *ngIf="items.length > 0" class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <strong>{{ items.length }} ingrédients nécessaires</strong>
+        </div>
         <ul class="list-group list-group-flush">
           <li *ngFor="let item of items" class="list-group-item d-flex justify-content-between">
             <span>{{ item.name }}</span>
@@ -48,17 +52,26 @@ export class ShoppingListComponent implements OnInit {
   items: ShoppingItem[] = [];
   hasGenerated = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const now = new Date();
-    this.startDate = now.toISOString().split('T')[0];
-    const later = new Date();
-    later.setDate(now.getDate() + 7);
-    this.endDate = later.toISOString().split('T')[0];
+    this.route.queryParams.subscribe(params => {
+      if (params['start'] && params['end']) {
+        this.startDate = params['start'];
+        this.endDate = params['end'];
+        this.generateList();
+      } else {
+        const now = new Date();
+        this.startDate = now.toISOString().split('T')[0];
+        const later = new Date();
+        later.setDate(now.getDate() + 7);
+        this.endDate = later.toISOString().split('T')[0];
+      }
+    });
   }
 
   generateList() {
+    if (!this.startDate || !this.endDate) return;
     this.apiService.getShoppingList(this.startDate, this.endDate).subscribe(data => {
       this.items = data;
       this.hasGenerated = true;

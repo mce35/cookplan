@@ -1,0 +1,63 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Recipe, Ingredient, Planning, ShoppingItem, RecipeShort } from '../models/models';
+import { environment } from '../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) { }
+
+  // Ingredients
+  getIngredients(): Observable<Ingredient[]> {
+    return this.http.get<Ingredient[]>(`${this.apiUrl}/ingredients/`);
+  }
+
+  createIngredient(ingredient: Ingredient): Observable<Ingredient> {
+    return this.http.post<Ingredient>(`${this.apiUrl}/ingredients/`, ingredient);
+  }
+
+  // Recipes
+  getRecipes(): Observable<Recipe[]> {
+    return this.http.get<Recipe[]>(`${this.apiUrl}/recipes/`);
+  }
+
+  getRecipe(id: number): Observable<Recipe> {
+    return this.http.get<Recipe>(`${this.apiUrl}/recipes/${id}`);
+  }
+
+  createRecipe(recipe: Recipe): Observable<Recipe> {
+    return this.http.post<Recipe>(`${this.apiUrl}/recipes/`, recipe);
+  }
+
+  updateRecipe(id: number, recipe: Recipe): Observable<Recipe> {
+    return this.http.put<Recipe>(`${this.apiUrl}/recipes/${id}`, recipe);
+  }
+
+  deleteRecipe(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/recipes/${id}`);
+  }
+
+  // Planning
+  getPlanning(startDate: string, endDate: string): Observable<Planning[]> {
+    return this.http.get<Planning[]>(`${this.apiUrl}/planning/?start_date=${startDate}&end_date=${endDate}`);
+  }
+
+  upsertPlanning(plan: Planning): Observable<Planning> {
+    return this.http.post<Planning>(`${this.apiUrl}/planning/`, plan);
+  }
+
+  // Shopping List
+  getShoppingList(startDate: string, endDate: string): Observable<ShoppingItem[]> {
+    return this.http.get<ShoppingItem[]>(`${this.apiUrl}/shopping-list/?start_date=${startDate}&end_date=${endDate}`);
+  }
+
+  // Search
+  searchRecipesByIngredient(name: string): Observable<RecipeShort[]> {
+    return this.http.get<RecipeShort[]>(`${this.apiUrl}/recipes-by-ingredient/${name}`);
+  }
+}

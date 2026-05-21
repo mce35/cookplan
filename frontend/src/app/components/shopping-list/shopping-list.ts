@@ -62,12 +62,19 @@ export class ShoppingListComponent implements OnInit {
         this.generateList();
       } else {
         const now = new Date();
-        this.startDate = now.toISOString().split('T')[0];
+        this.startDate = this.formatLocalDate(now);
         const later = new Date();
         later.setDate(now.getDate() + 7);
-        this.endDate = later.toISOString().split('T')[0];
+        this.endDate = this.formatLocalDate(later);
       }
     });
+  }
+
+  formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   generateList() {

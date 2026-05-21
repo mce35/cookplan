@@ -20,8 +20,8 @@ import { Recipe, Planning } from '../../models/models';
           </div>
 
           <div *ngIf="viewMode === 'week'" class="mr-3 d-flex align-items-center">
-            <label class="mb-0 mr-2">Sms:</label>
-            <input type="number" [(ngModel)]="numWeeks" (change)="updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
+            <label for="numWeeks" class="mb-0 mr-2">Sms:</label>
+            <input id="numWeeks" type="number" [(ngModel)]="numWeeks" (change)="updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
 
           <button (click)="previous()" class="btn btn-outline-secondary mr-2">Précédent</button>

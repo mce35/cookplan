@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ import { Recipe, Planning } from '../../models/models';
 
           <div *ngIf="viewMode === 'week'" class="mr-3 d-flex align-items-center">
             <label for="numWeeks" class="mb-0 mr-2">Sms:</label>
-            <input id="numWeeks" type="number" [(ngModel)]="numWeeks" (change)="updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
+            <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
 
           <button (click)="previous()" class="btn btn-outline-secondary mr-2">Précédent</button>
@@ -40,7 +40,7 @@ import { Recipe, Planning } from '../../models/models';
       </div>
 
       <div class="planning-grid" [style.grid-template-columns]="gridColumns">
-        <div *ngFor="let day of displayDays"
+        <div *ngFor="let day of displayDays()"
              class="day-card"
              [class.selecting]="isSelectingShopping"
              [class.selected-range]="isDateInRange(day)"
@@ -52,11 +52,11 @@ import { Recipe, Planning } from '../../models/models';
           <div class="meal-section">
             <div class="meal-label">Midi</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <select [(ngModel)]="getPlan(day, 'midi').main_recipe_id" (change)="savePlan(day, 'midi')" class="form-control form-control-sm mb-1">
+                <select [ngModel]="getPlanId(day, 'midi', 'main')" (ngModelChange)="updatePlanId(day, 'midi', 'main', $event)" class="form-control form-control-sm mb-1">
                     <option [ngValue]="null">-- Plat --</option>
                     <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
                 </select>
-                <select [(ngModel)]="getPlan(day, 'midi').side_recipe_id" (change)="savePlan(day, 'midi')" class="form-control form-control-sm">
+                <select [ngModel]="getPlanId(day, 'midi', 'side')" (ngModelChange)="updatePlanId(day, 'midi', 'side', $event)" class="form-control form-control-sm">
                     <option [ngValue]="null">-- Accomp. --</option>
                     <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
                 </select>
@@ -66,11 +66,11 @@ import { Recipe, Planning } from '../../models/models';
           <div class="meal-section">
             <div class="meal-label">Soir</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <select [(ngModel)]="getPlan(day, 'soir').main_recipe_id" (change)="savePlan(day, 'soir')" class="form-control form-control-sm mb-1">
+                <select [ngModel]="getPlanId(day, 'soir', 'main')" (ngModelChange)="updatePlanId(day, 'soir', 'main', $event)" class="form-control form-control-sm mb-1">
                     <option [ngValue]="null">-- Plat --</option>
                     <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
                 </select>
-                <select [(ngModel)]="getPlan(day, 'soir').side_recipe_id" (change)="savePlan(day, 'soir')" class="form-control form-control-sm">
+                <select [ngModel]="getPlanId(day, 'soir', 'side')" (ngModelChange)="updatePlanId(day, 'soir', 'side', $event)" class="form-control form-control-sm">
                     <option [ngValue]="null">-- Accomp. --</option>
                     <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
                 </select>
@@ -112,13 +112,13 @@ import { Recipe, Planning } from '../../models/models';
   `]
 })
 export class PlanningComponent implements OnInit {
-  displayDays: Date[] = [];
-  recipes: Recipe[] = [];
-  planningData: Planning[] = [];
+  displayDays = signal<Date[]>([]);
+  recipes = signal<Recipe[]>([]);
+  planningData = signal<Planning[]>([]);
 
-  viewMode: 'week' | 'month' = 'week';
-  numWeeks: number = 1;
-  referenceDate: Date = new Date();
+  viewMode = signal<'week' | 'month'>('week');
+  numWeeks = signal<number>(1);
+  referenceDate = signal<Date>(new Date());
 
   isSelectingShopping = false;
   shoppingStart: Date | null = null;
@@ -128,20 +128,20 @@ export class PlanningComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateRange();
-    this.apiService.getRecipes().subscribe(data => this.recipes = data);
+    this.apiService.getRecipes().subscribe(data => this.recipes.set(data));
   }
 
   get gridColumns() {
-    return `repeat(${this.viewMode === 'month' ? 7 : Math.min(this.displayDays.length, 7)}, 1fr)`;
+    return `repeat(${this.viewMode() === 'month' ? 7 : Math.min(this.displayDays().length, 7)}, 1fr)`;
   }
 
   setViewMode(mode: 'week' | 'month') {
-    this.viewMode = mode;
+    this.viewMode.set(mode);
     this.updateRange();
   }
 
   updateRange() {
-    if (this.viewMode === 'week') {
+    if (this.viewMode() === 'week') {
       this.calculateWeeks();
     } else {
       this.calculateMonth();
@@ -150,43 +150,48 @@ export class PlanningComponent implements OnInit {
   }
 
   calculateWeeks() {
-    const start = new Date(this.referenceDate);
+    const start = new Date(this.referenceDate());
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
     start.setDate(diff);
     start.setHours(0,0,0,0);
 
-    this.displayDays = [];
-    const totalDays = this.numWeeks * 7;
+    const days: Date[] = [];
+    const totalDays = this.numWeeks() * 7;
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      this.displayDays.push(d);
+      days.push(d);
     }
+    this.displayDays.set(days);
   }
 
   calculateMonth() {
-    const start = new Date(this.referenceDate.getFullYear(), this.referenceDate.getMonth(), 1);
+    const ref = this.referenceDate();
+    const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
     // Adjust to Monday of the first week of the month
     const day = start.getDay();
     const diff = day === 0 ? -6 : 1 - day;
     start.setDate(start.getDate() + diff);
     start.setHours(0,0,0,0);
 
-    this.displayDays = [];
+    const days: Date[] = [];
     // Always show 6 weeks for a consistent month view
     for (let i = 0; i < 42; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      this.displayDays.push(d);
+      days.push(d);
     }
+    this.displayDays.set(days);
   }
 
   loadPlanning() {
-    const start = this.formatDate(this.displayDays[0]);
-    const end = this.formatDate(this.displayDays[this.displayDays.length - 1]);
+    const days = this.displayDays();
+    if (days.length === 0) return;
+    const start = this.formatDate(days[0]);
+    const end = this.formatDate(days[days.length - 1]);
     this.apiService.getPlanning(start, end).subscribe(data => {
-      this.planningData = data;
+      this.planningData.set(data);
     });
   }
 
@@ -197,49 +202,65 @@ export class PlanningComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  getPlan(date: Date, mealType: string): Planning {
+  getPlanId(date: Date, mealType: string, recipeType: 'main' | 'side'): number | null {
     const dateStr = this.formatDate(date);
-    let plan = this.planningData.find(p => p.date === dateStr && p.meal_type === mealType);
-    if (!plan) {
-      plan = { date: dateStr, meal_type: mealType };
-    }
-    return plan;
+    const plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
+    if (!plan) return null;
+    return recipeType === 'main' ? (plan.main_recipe_id ?? null) : (plan.side_recipe_id ?? null);
   }
 
-  savePlan(date: Date, mealType: string) {
-    const plan = this.getPlan(date, mealType);
-    if (plan.main_recipe_id) plan.main_recipe_id = Number(plan.main_recipe_id);
-    if (plan.side_recipe_id) plan.side_recipe_id = Number(plan.side_recipe_id);
+  updatePlanId(date: Date, mealType: string, recipeType: 'main' | 'side', recipeId: any) {
+    const dateStr = this.formatDate(date);
+    let plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
+
+    if (!plan) {
+      plan = { date: dateStr, meal_type: mealType };
+    } else {
+      plan = { ...plan }; // Clone
+    }
+
+    const id = recipeId ? Number(recipeId) : null;
+    if (recipeType === 'main') {
+      plan.main_recipe_id = id;
+    } else {
+      plan.side_recipe_id = id;
+    }
 
     this.apiService.upsertPlanning(plan).subscribe(savedPlan => {
-      const index = this.planningData.findIndex(p => p.date === plan.date && p.meal_type === plan.meal_type);
+      const data = [...this.planningData()];
+      const index = data.findIndex(p => p.date === dateStr && p.meal_type === mealType);
       if (index > -1) {
-        this.planningData[index] = savedPlan;
+        data[index] = savedPlan;
       } else {
-        this.planningData.push(savedPlan);
+        data.push(savedPlan);
       }
+      this.planningData.set(data);
     });
   }
 
   recipesByType(type: string) {
-    return this.recipes.filter(r => r.recipe_type === type);
+    return this.recipes().filter(r => r.recipe_type === type);
   }
 
   previous() {
-    if (this.viewMode === 'week') {
-      this.referenceDate.setDate(this.referenceDate.getDate() - (7 * this.numWeeks));
+    const ref = new Date(this.referenceDate());
+    if (this.viewMode() === 'week') {
+      ref.setDate(ref.getDate() - (7 * this.numWeeks()));
     } else {
-      this.referenceDate.setMonth(this.referenceDate.getMonth() - 1);
+      ref.setMonth(ref.getMonth() - 1);
     }
+    this.referenceDate.set(ref);
     this.updateRange();
   }
 
   next() {
-    if (this.viewMode === 'week') {
-      this.referenceDate.setDate(this.referenceDate.getDate() + (7 * this.numWeeks));
+    const ref = new Date(this.referenceDate());
+    if (this.viewMode() === 'week') {
+      ref.setDate(ref.getDate() + (7 * this.numWeeks()));
     } else {
-      this.referenceDate.setMonth(this.referenceDate.getMonth() + 1);
+      ref.setMonth(ref.getMonth() + 1);
     }
+    this.referenceDate.set(ref);
     this.updateRange();
   }
 

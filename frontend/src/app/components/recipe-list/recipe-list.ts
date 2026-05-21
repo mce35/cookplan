@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -11,16 +11,16 @@ import { Recipe } from '../../models/models';
   template: `
     <div class="container mt-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Liste des Recettes ({{ recipes.length }})</h2>
+        <h2>Liste des Recettes ({{ recipes().length }})</h2>
         <a routerLink="/recipes/new" class="btn btn-primary">Ajouter une recette</a>
       </div>
 
-      <div *ngIf="recipes.length === 0" class="alert alert-info">
+      <div *ngIf="recipes().length === 0" class="alert alert-info">
         Aucune recette trouvée.
       </div>
 
       <div class="row">
-        <div class="col-md-4 mb-4" *ngFor="let recipe of recipes">
+        <div class="col-md-4 mb-4" *ngFor="let recipe of recipes()">
           <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h5 class="card-title text-primary">{{ recipe.name }}</h5>
@@ -46,7 +46,7 @@ import { Recipe } from '../../models/models';
   `]
 })
 export class RecipeListComponent implements OnInit {
-  recipes: Recipe[] = [];
+  recipes = signal<Recipe[]>([]);
 
   constructor(private apiService: ApiService) {}
 
@@ -54,7 +54,7 @@ export class RecipeListComponent implements OnInit {
     this.apiService.getRecipes().subscribe({
       next: (data) => {
         console.log('Recipes loaded successfully:', data);
-        this.recipes = data;
+        this.recipes.set(data);
       },
       error: (err) => {
         console.error('Error loading recipes:', err);

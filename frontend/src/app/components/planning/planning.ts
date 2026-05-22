@@ -15,11 +15,11 @@ import { Recipe, Planning } from '../../models/models';
         <h2>Planning</h2>
         <div class="d-flex align-items-center">
           <div class="btn-group mr-3">
-            <button class="btn btn-outline-primary" [class.active]="viewMode === 'week'" (click)="setViewMode('week')">Semaine</button>
-            <button class="btn btn-outline-primary" [class.active]="viewMode === 'month'" (click)="setViewMode('month')">Mois</button>
+            <button class="btn btn-outline-primary" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semaine</button>
+            <button class="btn btn-outline-primary" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mois</button>
           </div>
 
-          <div *ngIf="viewMode === 'week'" class="mr-3 d-flex align-items-center">
+          <div *ngIf="viewMode() === 'week'" class="mr-3 d-flex align-items-center">
             <label for="numWeeks" class="mb-0 mr-2">Sms:</label>
             <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
@@ -219,7 +219,7 @@ export class PlanningComponent implements OnInit {
       plan = { ...plan }; // Clone
     }
 
-    const id = recipeId ? Number(recipeId) : null;
+    const id = recipeId ? Number(recipeId) : undefined;
     if (recipeType === 'main') {
       plan.main_recipe_id = id;
     } else {

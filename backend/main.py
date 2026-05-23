@@ -210,5 +210,6 @@ def get_recipes_by_ingredient(
     )
     total = query.count()
     response.headers["X-Total-Count"] = str(total)
+    response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"
     recipes = query.offset(skip).limit(limit).all()
     return recipes

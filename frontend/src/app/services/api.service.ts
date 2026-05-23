@@ -62,7 +62,9 @@ export class ApiService {
   }
 
   // Search
-  searchRecipesByIngredient(name: string): Observable<RecipeShort[]> {
-    return this.http.get<RecipeShort[]>(`${this.apiUrl}/recipes-by-ingredient/${name}`);
+  searchRecipesByIngredient(name: string, page = 1, pageSize = 10): Observable<HttpResponse<RecipeShort[]>> {
+    const skip = (page - 1) * pageSize;
+    const encodedName = encodeURIComponent(name);
+    return this.http.get<RecipeShort[]>(`${this.apiUrl}/recipes-by-ingredient/${encodedName}?skip=${skip}&limit=${pageSize}`, { observe: 'response' });
   }
 }

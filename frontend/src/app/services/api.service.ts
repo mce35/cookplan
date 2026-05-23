@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Recipe, Ingredient, Planning, ShoppingItem, RecipeShort } from '../models/models';
 import { environment } from '../../environments/environment';
@@ -23,7 +23,12 @@ export class ApiService {
 
   // Recipes
   getRecipes(): Observable<Recipe[]> {
-    return this.http.get<Recipe[]>(`${this.apiUrl}/recipes/`);
+    return this.http.get<Recipe[]>(`${this.apiUrl}/recipes/?skip=0&limit=1000`);
+  }
+
+  getRecipesPage(page = 1, pageSize = 20): Observable<HttpResponse<Recipe[]>> {
+    const skip = (page - 1) * pageSize;
+    return this.http.get<Recipe[]>(`${this.apiUrl}/recipes/?skip=${skip}&limit=${pageSize}`, { observe: 'response' });
   }
 
   getRecipe(id: number): Observable<Recipe> {

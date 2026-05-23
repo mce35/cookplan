@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
@@ -37,7 +37,7 @@ def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depend
     return db_ingredient
 
 @app.get("/ingredients/", response_model=List[schemas.Ingredient])
-def read_ingredients(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
     ingredients = db.query(models.Ingredient).offset(skip).limit(limit).all()
     return ingredients
 
@@ -78,7 +78,10 @@ def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
     return db_recipe
 
 @app.get("/recipes/", response_model=List[schemas.Recipe])
-def read_recipes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_recipes(response: Response, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    total = db.query(models.Recipe).count()
+    response.headers["X-Total-Count"] = str(total)
+    response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"
     recipes = db.query(models.Recipe).offset(skip).limit(limit).all()
     return recipes
 
@@ -195,8 +198,17 @@ def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(ge
 # --- Search ---
 
 @app.get("/recipes-by-ingredient/{ingredient_name}", response_model=List[schemas.RecipeShort])
-def get_recipes_by_ingredient(ingredient_name: str, db: Session = Depends(get_db)):
-    recipes = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
+def get_recipes_by_ingredient(
+    ingredient_name: str,
+    response: Response,
+    skip: int = 0,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
         models.Ingredient.name.ilike(f"%{ingredient_name}%")
-    ).all()
+    )
+    total = query.count()
+    response.headers["X-Total-Count"] = str(total)
+    recipes = query.offset(skip).limit(limit).all()
     return recipes

@@ -25,6 +25,7 @@ import { Recipe, Planning } from '../../models/models';
           </div>
 
           <button (click)="previous()" class="btn btn-outline-secondary mr-2">Précédent</button>
+          <button (click)="goToToday()" class="btn btn-primary mr-2">Aujourd'hui</button>
           <button (click)="next()" class="btn btn-outline-secondary mr-3">Suivant</button>
 
           <button (click)="toggleShoppingSelect()" class="btn" [class.btn-success]="!isSelectingShopping" [class.btn-danger]="isSelectingShopping">
@@ -261,6 +262,11 @@ export class PlanningComponent implements OnInit {
       ref.setMonth(ref.getMonth() + 1);
     }
     this.referenceDate.set(ref);
+    this.updateRange();
+  }
+
+  goToToday() {
+    this.referenceDate.set(new Date());
     this.updateRange();
   }
 

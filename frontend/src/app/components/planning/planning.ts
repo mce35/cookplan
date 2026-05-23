@@ -56,28 +56,48 @@ import { Recipe, Planning } from '../../models/models';
           <div class="meal-section">
             <div class="meal-label">Midi</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <select [ngModel]="getPlanId(day, 'midi', 'main')" (ngModelChange)="updatePlanId(day, 'midi', 'main', $event)" class="form-control form-control-sm mb-1">
-                    <option [ngValue]="null">-- Plat --</option>
-                    <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
-                </select>
-                <select [ngModel]="getPlanId(day, 'midi', 'side')" (ngModelChange)="updatePlanId(day, 'midi', 'side', $event)" class="form-control form-control-sm">
-                    <option [ngValue]="null">-- Accomp. --</option>
-                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
-                </select>
+                <div class="d-flex align-items-center mb-1">
+                  <select [ngModel]="getPlanId(day, 'midi', 'main')" (ngModelChange)="updatePlanId(day, 'midi', 'main', $event)" class="form-control form-control-sm">
+                      <option [ngValue]="null">-- Plat --</option>
+                      <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
+                  </select>
+                  <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
+                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                  </button>
+                </div>
+                <div class="d-flex align-items-center">
+                  <select [ngModel]="getPlanId(day, 'midi', 'side')" (ngModelChange)="updatePlanId(day, 'midi', 'side', $event)" class="form-control form-control-sm">
+                      <option [ngValue]="null">-- Accomp. --</option>
+                      <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
+                  </select>
+                  <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
+                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                  </button>
+                </div>
             </div>
           </div>
 
           <div class="meal-section">
             <div class="meal-label">Soir</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <select [ngModel]="getPlanId(day, 'soir', 'main')" (ngModelChange)="updatePlanId(day, 'soir', 'main', $event)" class="form-control form-control-sm mb-1">
-                    <option [ngValue]="null">-- Plat --</option>
-                    <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
-                </select>
-                <select [ngModel]="getPlanId(day, 'soir', 'side')" (ngModelChange)="updatePlanId(day, 'soir', 'side', $event)" class="form-control form-control-sm">
-                    <option [ngValue]="null">-- Accomp. --</option>
-                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
-                </select>
+                <div class="d-flex align-items-center mb-1">
+                  <select [ngModel]="getPlanId(day, 'soir', 'main')" (ngModelChange)="updatePlanId(day, 'soir', 'main', $event)" class="form-control form-control-sm">
+                      <option [ngValue]="null">-- Plat --</option>
+                      <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
+                  </select>
+                  <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
+                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                  </button>
+                </div>
+                <div class="d-flex align-items-center">
+                  <select [ngModel]="getPlanId(day, 'soir', 'side')" (ngModelChange)="updatePlanId(day, 'soir', 'side', $event)" class="form-control form-control-sm">
+                      <option [ngValue]="null">-- Accomp. --</option>
+                      <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
+                  </select>
+                  <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
+                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                  </button>
+                </div>
             </div>
           </div>
         </div>
@@ -261,6 +281,12 @@ export class PlanningComponent implements OnInit {
       }
       this.planningData.set(data);
     });
+  }
+
+  viewRecipe(recipeId: number | null) {
+    if (recipeId) {
+      this.router.navigate(['/recipes', recipeId]);
+    }
   }
 
   recipesByType(type: string) {

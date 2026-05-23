@@ -4,3 +4,4 @@ frontend/dist/
 .env
 *.db
 *.log
+package-lock.json

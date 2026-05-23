@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Recipe } from '../../models/models';
+import { MarkdownPipe } from '../../pipes/markdown.pipe';
 
 @Component({
   selector: 'app-recipe-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MarkdownPipe],
   template: `
     <div class="container mt-4" *ngIf="recipe">
       <div class="card shadow">
@@ -45,8 +46,8 @@ import { Recipe } from '../../models/models';
           </div>
 
           <h4>Instructions</h4>
-          <div class="bg-light p-3 rounded" style="white-space: pre-line;">
-            {{ recipe.instructions }}
+          <div class="bg-light p-3 rounded recipe-instructions">
+            <div [innerHTML]="recipe.instructions | markdown"></div>
           </div>
         </div>
       </div>

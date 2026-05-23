@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Ingredient } from '../../models/models';
 
@@ -85,7 +86,21 @@ import { Recipe, Ingredient } from '../../models/models';
 
         <div class="form-group">
           <label for="instructions">Instructions / Étapes</label>
-          <textarea id="instructions" formControlName="instructions" class="form-control" rows="10"></textarea>
+          <div class="btn-group mb-2" role="group" aria-label="Markdown formatting">
+            <button type="button" class="btn btn-outline-secondary" (click)="formatBold()">Gras</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="formatItalic()">Italique</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="formatHeading()">Titre</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="formatList()">Liste</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="formatCode()">Code</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="formatQuote()">Citation</button>
+          </div>
+          <textarea #instructionsTextarea id="instructions" formControlName="instructions" class="form-control" rows="10"
+                    (input)="onInstructionsChange()"></textarea>
+        </div>
+
+        <div class="card card-body markdown-preview mb-3">
+          <h5>Prévisualisation</h5>
+          <div [innerHTML]="markdownPreview()"></div>
         </div>
 
         <button type="submit" class="btn btn-primary" [disabled]="!recipeForm.valid">Enregistrer</button>
@@ -99,19 +114,24 @@ import { Recipe, Ingredient } from '../../models/models';
   `]
 })
 export class RecipeFormComponent implements OnInit {
+  @ViewChild('instructionsTextarea') instructionsTextarea!: ElementRef<HTMLTextAreaElement>;
+
   recipeForm: FormGroup;
   isEdit = false;
   recipeId?: number;
   allIngredients: Ingredient[] = [];
   allRecipes: Recipe[] = [];
   showNewIngredientForm = false;
+  markdownPreview = signal<SafeHtml>(null as unknown as SafeHtml);
 
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) {
+    this.markdownPreview.set(this.sanitizer.bypassSecurityTrustHtml(''));
     this.recipeForm = this.fb.group({
       name: ['', Validators.required],
       servings: [4, Validators.required],
@@ -149,6 +169,7 @@ export class RecipeFormComponent implements OnInit {
             quantity: [ri.quantity, Validators.required]
           }));
         });
+        this.updatePreview(recipe.instructions);
       });
     }
   }
@@ -180,6 +201,96 @@ export class RecipeFormComponent implements OnInit {
         alert(`Ingrédient ${newIng.name} créé !`);
       });
     }
+  }
+
+  onInstructionsChange() {
+    this.updatePreview(this.recipeForm.value.instructions || '');
+  }
+
+  formatBold() {
+    this.applyMarkdown('**', '**', 'texte en gras');
+  }
+
+  formatItalic() {
+    this.applyMarkdown('*', '*', 'texte en italique');
+  }
+
+  formatHeading() {
+    this.applyMarkdown('# ', '', 'Titre');
+  }
+
+  formatList() {
+    this.applyMarkdown('- ', '', 'Élément de liste');
+  }
+
+  formatCode() {
+    this.applyMarkdown('`', '`', 'code');
+  }
+
+  formatQuote() {
+    this.applyMarkdown('> ', '', 'citation');
+  }
+
+  private applyMarkdown(prefix: string, suffix: string, placeholder: string) {
+    const textarea = this.instructionsTextarea?.nativeElement;
+    if (!textarea) {
+      return;
+    }
+
+    const value = textarea.value;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = value.substring(start, end) || placeholder;
+    const newText = `${prefix}${selectedText}${suffix}`;
+    const updated = value.slice(0, start) + newText + value.slice(end);
+
+    this.recipeForm.patchValue({ instructions: updated });
+    this.updatePreview(updated);
+
+    const cursorPosition = start + newText.length;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(cursorPosition, cursorPosition);
+    });
+  }
+
+  private updatePreview(markdown: string) {
+    const html = this.markdownToHtml(markdown);
+    this.markdownPreview.set(this.sanitizer.bypassSecurityTrustHtml(html));
+  }
+
+  private markdownToHtml(text: string): string {
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    html = html.replace(/^###### (.*)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^##### (.*)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^#### (.*)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+    html = html.replace(/^> (.*)$/gm, '<blockquote>$1</blockquote>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+    html = html.replace(/^\s*[-*+] (.*)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    html = html.replace(/^\s*\d+\. (.*)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
+
+    html = html.split(/\n{2,}/).map(paragraph => {
+      if (paragraph.match(/^<h[1-6]>|^<ul>|^<ol>|^<pre>|^<blockquote>/)) {
+        return paragraph;
+      }
+      return `<p>${paragraph.replace(/\n/g, '<br/>')}</p>`;
+    }).join('');
+
+    return html;
   }
 
   onSubmit() {

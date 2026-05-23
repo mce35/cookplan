@@ -45,8 +45,11 @@ import { Recipe, Planning } from '../../models/models';
              class="day-card"
              [class.selecting]="isSelectingShopping"
              [class.selected-range]="isDateInRange(day)"
+             [class.past-day]="isPastDay(day)"
+             [class.today-day]="isToday(day)"
+             [class.upcoming-day]="isUpcomingDay(day)"
              (click)="selectDate(day)">
-          <div class="day-header text-center" [class.bg-today]="isToday(day)">
+          <div class="day-header text-center">
             <strong>{{ day | date:'EEEE d MMM' : undefined : 'fr-FR' }}</strong>
           </div>
 
@@ -104,7 +107,28 @@ import { Recipe, Planning } from '../../models/models';
       border-bottom: 1px solid #c3e6cb;
       font-size: 0.85rem;
     }
-    .bg-today { background-color: #ffc107 !important; border-bottom: 1px solid #ff9800; }
+    .day-card.past-day {
+      background-color: #f0f0f0;
+      border-color: #ced4da;
+      color: #6c757d;
+    }
+    .day-card.today-day {
+      background-color: #fff3cd;
+      border-color: #ffeeba;
+      color: #856404;
+    }
+    .day-card.upcoming-day {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+    .day-card.today-day .day-header,
+    .day-card.past-day .day-header,
+    .day-card.upcoming-day .day-header {
+      background-color: transparent;
+      border-bottom: 1px solid transparent;
+      margin-bottom: 10px;
+    }
     .meal-section { margin-bottom: 10px; }
     .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
     .recipe-select-group select { font-size: 0.75rem; }
@@ -275,6 +299,20 @@ export class PlanningComponent implements OnInit {
     return date.getDate() === today.getDate() &&
            date.getMonth() === today.getMonth() &&
            date.getFullYear() === today.getFullYear();
+  }
+
+  isPastDay(date: Date): boolean {
+    const today = new Date();
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return normalizedDate < normalizedToday;
+  }
+
+  isUpcomingDay(date: Date): boolean {
+    const today = new Date();
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return normalizedDate > normalizedToday;
   }
 
   // --- Shopping List Selection ---

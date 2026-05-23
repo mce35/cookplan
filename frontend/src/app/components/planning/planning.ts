@@ -20,7 +20,7 @@ import { Recipe, Planning } from '../../models/models';
           </div>
 
           <div *ngIf="viewMode() === 'week'" class="mr-3 d-flex align-items-center">
-            <label for="numWeeks" class="mb-0 mr-2">Sms:</label>
+            <label for="numWeeks" class="mb-0 mr-2">Semaines a afficher:</label>
             <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
 
@@ -270,7 +270,7 @@ export class PlanningComponent implements OnInit {
   previous() {
     const ref = new Date(this.referenceDate());
     if (this.viewMode() === 'week') {
-      ref.setDate(ref.getDate() - (7 * this.numWeeks()));
+      ref.setDate(ref.getDate() - 7);
     } else {
       ref.setMonth(ref.getMonth() - 1);
     }
@@ -281,7 +281,7 @@ export class PlanningComponent implements OnInit {
   next() {
     const ref = new Date(this.referenceDate());
     if (this.viewMode() === 'week') {
-      ref.setDate(ref.getDate() + (7 * this.numWeeks()));
+      ref.setDate(ref.getDate() + 7);
     } else {
       ref.setMonth(ref.getMonth() + 1);
     }

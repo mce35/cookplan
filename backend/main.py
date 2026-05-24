@@ -82,7 +82,7 @@ def read_recipes(response: Response, skip: int = 0, limit: int = 100, db: Sessio
     total = db.query(models.Recipe).count()
     response.headers["X-Total-Count"] = str(total)
     response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"
-    recipes = db.query(models.Recipe).offset(skip).limit(limit).all()
+    recipes = db.query(models.Recipe).order_by(models.Recipe.name).offset(skip).limit(limit).all()
     return recipes
 
 @app.get("/recipes/{recipe_id}", response_model=schemas.Recipe)
@@ -207,7 +207,7 @@ def get_recipes_by_ingredient(
 ):
     query = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
         models.Ingredient.name.ilike(f"%{ingredient_name}%")
-    )
+    ).order_by(models.Recipe.name)
     total = query.count()
     response.headers["X-Total-Count"] = str(total)
     response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"

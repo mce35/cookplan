@@ -56,20 +56,40 @@ import { Recipe, Planning } from '../../models/models';
           <div class="meal-section">
             <div class="meal-label">Midi</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <div class="d-flex align-items-center mb-1">
-                  <select [ngModel]="getPlanId(day, 'midi', 'main')" (ngModelChange)="updatePlanId(day, 'midi', 'main', $event)" class="form-control form-control-sm">
-                      <option [ngValue]="null">-- Plat --</option>
-                      <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
-                  </select>
+                <div class="recipe-input-row mb-1">
+                  <input
+                    #mainMidiInput
+                    type="text"
+                    class="form-control form-control-sm recipe-autocomplete"
+                    [ngModel]="getRecipeText(day, 'midi', 'main')"
+                    (ngModelChange)="onRecipeInputText(day, 'midi', 'main', $event)"
+                    (blur)="applyRecipeFromName(day, 'midi', 'main')"
+                    (keydown.enter)="applyRecipeFromName(day, 'midi', 'main')"
+                    [attr.list]="getDatalistId(day, 'midi', 'main')"
+                    placeholder="-- Plat --"
+                  />
+                  <datalist [id]="getDatalistId(day, 'midi', 'main')">
+                    <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
+                  </datalist>
                   <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
                 </div>
-                <div class="d-flex align-items-center">
-                  <select [ngModel]="getPlanId(day, 'midi', 'side')" (ngModelChange)="updatePlanId(day, 'midi', 'side', $event)" class="form-control form-control-sm">
-                      <option [ngValue]="null">-- Accomp. --</option>
-                      <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
-                  </select>
+                <div class="recipe-input-row">
+                  <input
+                    #sideMidiInput
+                    type="text"
+                    class="form-control form-control-sm recipe-autocomplete"
+                    [ngModel]="getRecipeText(day, 'midi', 'side')"
+                    (ngModelChange)="onRecipeInputText(day, 'midi', 'side', $event)"
+                    (blur)="applyRecipeFromName(day, 'midi', 'side')"
+                    (keydown.enter)="applyRecipeFromName(day, 'midi', 'side')"
+                    [attr.list]="getDatalistId(day, 'midi', 'side')"
+                    placeholder="-- Accomp. --"
+                  />
+                  <datalist [id]="getDatalistId(day, 'midi', 'side')">
+                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
+                  </datalist>
                   <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
@@ -80,20 +100,40 @@ import { Recipe, Planning } from '../../models/models';
           <div class="meal-section">
             <div class="meal-label">Soir</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
-                <div class="d-flex align-items-center mb-1">
-                  <select [ngModel]="getPlanId(day, 'soir', 'main')" (ngModelChange)="updatePlanId(day, 'soir', 'main', $event)" class="form-control form-control-sm">
-                      <option [ngValue]="null">-- Plat --</option>
-                      <option *ngFor="let r of recipesByType('plat')" [value]="r.id">{{ r.name }}</option>
-                  </select>
+                <div class="recipe-input-row mb-1">
+                  <input
+                    #mainSoirInput
+                    type="text"
+                    class="form-control form-control-sm recipe-autocomplete"
+                    [ngModel]="getRecipeText(day, 'soir', 'main')"
+                    (ngModelChange)="onRecipeInputText(day, 'soir', 'main', $event)"
+                    (blur)="applyRecipeFromName(day, 'soir', 'main')"
+                    (keydown.enter)="applyRecipeFromName(day, 'soir', 'main')"
+                    [attr.list]="getDatalistId(day, 'soir', 'main')"
+                    placeholder="-- Plat --"
+                  />
+                  <datalist [id]="getDatalistId(day, 'soir', 'main')">
+                    <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
+                  </datalist>
                   <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
                 </div>
-                <div class="d-flex align-items-center">
-                  <select [ngModel]="getPlanId(day, 'soir', 'side')" (ngModelChange)="updatePlanId(day, 'soir', 'side', $event)" class="form-control form-control-sm">
-                      <option [ngValue]="null">-- Accomp. --</option>
-                      <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.id">{{ r.name }}</option>
-                  </select>
+                <div class="recipe-input-row">
+                  <input
+                    #sideSoirInput
+                    type="text"
+                    class="form-control form-control-sm recipe-autocomplete"
+                    [ngModel]="getRecipeText(day, 'soir', 'side')"
+                    (ngModelChange)="onRecipeInputText(day, 'soir', 'side', $event)"
+                    (blur)="applyRecipeFromName(day, 'soir', 'side')"
+                    (keydown.enter)="applyRecipeFromName(day, 'soir', 'side')"
+                    [attr.list]="getDatalistId(day, 'soir', 'side')"
+                    placeholder="-- Accomp. --"
+                  />
+                  <datalist [id]="getDatalistId(day, 'soir', 'side')">
+                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
+                  </datalist>
                   <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
@@ -151,7 +191,10 @@ import { Recipe, Planning } from '../../models/models';
     }
     .meal-section { margin-bottom: 10px; }
     .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
-    .recipe-select-group select { font-size: 0.75rem; }
+    .recipe-select-group .recipe-input-row { display: flex; align-items: center; margin-bottom: 4px; }
+    .recipe-select-group .recipe-autocomplete { font-size: 0.75rem; }
+    .recipe-select-group .recipe-dropdown-button { min-width: 34px; }
+    .recipe-select-group .recipe-dropdown-button .material-icons { vertical-align: middle; }
     .mr-2 { margin-right: 10px; }
     .mr-3 { margin-right: 15px; }
   `]
@@ -160,6 +203,7 @@ export class PlanningComponent implements OnInit {
   displayDays = signal<Date[]>([]);
   recipes = signal<Recipe[]>([]);
   planningData = signal<Planning[]>([]);
+  recipeInputValues: Record<string, string> = {};
 
   viewMode = signal<'week' | 'month'>('week');
   numWeeks = signal<number>(1);
@@ -252,6 +296,48 @@ export class PlanningComponent implements OnInit {
     const plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
     if (!plan) return null;
     return recipeType === 'main' ? (plan.main_recipe_id ?? null) : (plan.side_recipe_id ?? null);
+  }
+
+  getInputKey(date: Date, mealType: string, recipeType: 'main' | 'side'): string {
+    return `${this.formatDate(date)}|${mealType}|${recipeType}`;
+  }
+
+  getDatalistId(date: Date, mealType: string, recipeType: 'main' | 'side'): string {
+    return `recipe-options-${this.formatDate(date)}-${mealType}-${recipeType}`;
+  }
+
+  getRecipeNameById(id: number | null): string | null {
+    return this.recipes().find(recipe => recipe.id === id)?.name ?? null;
+  }
+
+  getRecipeText(date: Date, mealType: string, recipeType: 'main' | 'side'): string {
+    const key = this.getInputKey(date, mealType, recipeType);
+    if (this.recipeInputValues[key] !== undefined) {
+      return this.recipeInputValues[key];
+    }
+    const planId = this.getPlanId(date, mealType, recipeType);
+    return planId ? this.getRecipeNameById(planId) ?? '' : '';
+  }
+
+  onRecipeInputText(date: Date, mealType: string, recipeType: 'main' | 'side', value: string) {
+    const key = this.getInputKey(date, mealType, recipeType);
+    this.recipeInputValues[key] = value;
+  }
+
+  focusField(input: HTMLInputElement) {
+    input.focus();
+  }
+
+  applyRecipeFromName(date: Date, mealType: string, recipeType: 'main' | 'side') {
+    const key = this.getInputKey(date, mealType, recipeType);
+    const name = this.recipeInputValues[key]?.trim();
+    const wantedType = recipeType === 'main' ? 'plat' : 'accompagnement';
+    const recipe = this.recipes().find(r => r.recipe_type === wantedType && r.name === name);
+    const recipeId = recipe ? recipe.id : null;
+    this.updatePlanId(date, mealType, recipeType, recipeId);
+    if (!recipeId) {
+      delete this.recipeInputValues[key];
+    }
   }
 
   updatePlanId(date: Date, mealType: string, recipeType: 'main' | 'side', recipeId: any) {

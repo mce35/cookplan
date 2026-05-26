@@ -13,15 +13,19 @@ import { ShoppingItem } from '../../models/models';
     <div class="container">
       <h2>Liste de courses</h2>
       <div class="row mb-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label>Du</label>
           <input type="date" [(ngModel)]="startDate" class="form-control">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label>Au</label>
           <input type="date" [(ngModel)]="endDate" class="form-control">
         </div>
-        <div class="col-md-4 d-flex align-items-end">
+        <div class="col-md-3">
+          <label>Personnes</label>
+          <input type="number" min="1" [(ngModel)]="persons" class="form-control">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
           <button (click)="generateList()" class="btn btn-primary">Générer</button>
         </div>
       </div>
@@ -49,6 +53,7 @@ import { ShoppingItem } from '../../models/models';
 export class ShoppingListComponent implements OnInit {
   startDate: string = '';
   endDate: string = '';
+  persons: number = 1;
   items: ShoppingItem[] = [];
   hasGenerated = false;
 
@@ -59,6 +64,7 @@ export class ShoppingListComponent implements OnInit {
       if (params['start'] && params['end']) {
         this.startDate = params['start'];
         this.endDate = params['end'];
+        this.persons = params['persons'] ? Number(params['persons']) || 1 : 1;
         this.generateList();
       } else {
         const now = new Date();
@@ -79,7 +85,8 @@ export class ShoppingListComponent implements OnInit {
 
   generateList() {
     if (!this.startDate || !this.endDate) return;
-    this.apiService.getShoppingList(this.startDate, this.endDate).subscribe(data => {
+    const persons = Number(this.persons) || 1;
+    this.apiService.getShoppingList(this.startDate, this.endDate, persons).subscribe(data => {
       this.items = data;
       this.hasGenerated = true;
     });

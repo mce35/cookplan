@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Response, Query
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
@@ -163,7 +163,12 @@ def create_or_update_planning(plan: schemas.PlanningCreate, db: Session = Depend
 # --- Shopping List ---
 
 @app.get("/shopping-list/")
-def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(get_db)):
+def get_shopping_list(
+    start_date: date,
+    end_date: date,
+    persons: int = Query(1, ge=1),
+    db: Session = Depends(get_db)
+):
     plans = db.query(models.Planning).filter(
         models.Planning.date >= start_date,
         models.Planning.date <= end_date
@@ -171,7 +176,7 @@ def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(ge
 
     shopping_list = {} # ingredient_id -> {name, unit, quantity}
 
-    def add_recipe_to_list(recipe_id, multiplier=1, visited=None):
+    def add_recipe_to_list(recipe_id, scale=1, visited=None):
         if not recipe_id: return
         if visited is None: visited = set()
         if recipe_id in visited: return
@@ -184,14 +189,20 @@ def get_shopping_list(start_date: date, end_date: date, db: Session = Depends(ge
             ing = ri.ingredient
             if ing.id not in shopping_list:
                 shopping_list[ing.id] = {"name": ing.name, "unit": ing.unit, "quantity": 0}
-            shopping_list[ing.id]["quantity"] += ri.quantity * multiplier
+            shopping_list[ing.id]["quantity"] += round(ri.quantity * scale,2)
 
         for dep in recipe.dependencies:
-            add_recipe_to_list(dep.id, multiplier, visited)
+            add_recipe_to_list(dep.id, scale, visited)
 
     for plan in plans:
-        add_recipe_to_list(plan.main_recipe_id)
-        add_recipe_to_list(plan.side_recipe_id)
+        if plan.main_recipe_id:
+            main_recipe = db.query(models.Recipe).filter(models.Recipe.id == plan.main_recipe_id).first()
+            main_servings = main_recipe.servings or 1 if main_recipe else 1
+            add_recipe_to_list(plan.main_recipe_id, persons / main_servings)
+        if plan.side_recipe_id:
+            side_recipe = db.query(models.Recipe).filter(models.Recipe.id == plan.side_recipe_id).first()
+            side_servings = side_recipe.servings or 1 if side_recipe else 1
+            add_recipe_to_list(plan.side_recipe_id, persons / side_servings)
 
     return list(shopping_list.values())
 

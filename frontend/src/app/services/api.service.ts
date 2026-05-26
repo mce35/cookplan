@@ -57,8 +57,8 @@ export class ApiService {
   }
 
   // Shopping List
-  getShoppingList(startDate: string, endDate: string): Observable<ShoppingItem[]> {
-    return this.http.get<ShoppingItem[]>(`${this.apiUrl}/shopping-list/?start_date=${startDate}&end_date=${endDate}`);
+  getShoppingList(startDate: string, endDate: string, persons: number = 1): Observable<ShoppingItem[]> {
+    return this.http.get<ShoppingItem[]>(`${this.apiUrl}/shopping-list/?start_date=${startDate}&end_date=${endDate}&persons=${persons}`);
   }
 
   // Search

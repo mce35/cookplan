@@ -34,10 +34,16 @@ import { Recipe, Planning } from '../../models/models';
         </div>
       </div>
 
-      <div *ngIf="isSelectingShopping" class="alert alert-info py-2 mb-3">
-        Cliquez sur une date de début puis une date de fin pour générer la liste de courses.
-        <span *ngIf="shoppingStart" class="ml-2 font-weight-bold">Début: {{ shoppingStart | date:'shortDate' }}</span>
-        <span *ngIf="shoppingEnd" class="ml-2 font-weight-bold">Fin: {{ shoppingEnd | date:'shortDate' }}</span>
+      <div *ngIf="isSelectingShopping" class="d-flex alert alert-info py-2 mb-3">
+        <div class="mr-2 d-flex align-items-center">
+          <label for="persons" class="mb-0 mr-2">Personnes:</label>
+          <input id="persons" type="number" min="1" [(ngModel)]="persons" class="form-control">
+        </div>
+        <div class="mr-10 d-flex align-items-center">
+          Cliquez sur une date de début puis une date de fin pour générer la liste de courses.
+          <span *ngIf="shoppingStart" class="ml-2 font-weight-bold">Début: {{ shoppingStart | date:'shortDate' }}</span>
+          <span *ngIf="shoppingEnd" class="ml-2 font-weight-bold">Fin: {{ shoppingEnd | date:'shortDate' }}</span>
+        </div>
       </div>
 
       <div class="planning-grid" [style.grid-template-columns]="gridColumns">
@@ -212,6 +218,7 @@ export class PlanningComponent implements OnInit {
   isSelectingShopping = false;
   shoppingStart: Date | null = null;
   shoppingEnd: Date | null = null;
+  persons: number = 4;
 
   constructor(private apiService: ApiService, private router: Router) {}
 
@@ -322,10 +329,6 @@ export class PlanningComponent implements OnInit {
   onRecipeInputText(date: Date, mealType: string, recipeType: 'main' | 'side', value: string) {
     const key = this.getInputKey(date, mealType, recipeType);
     this.recipeInputValues[key] = value;
-  }
-
-  focusField(input: HTMLInputElement) {
-    input.focus();
   }
 
   applyRecipeFromName(date: Date, mealType: string, recipeType: 'main' | 'side') {
@@ -451,7 +454,8 @@ export class PlanningComponent implements OnInit {
       this.router.navigate(['/shopping-list'], {
         queryParams: {
           start: this.formatDate(this.shoppingStart),
-          end: this.formatDate(this.shoppingEnd)
+          end: this.formatDate(this.shoppingEnd),
+          persons: this.persons
         }
       });
       this.isSelectingShopping = false;

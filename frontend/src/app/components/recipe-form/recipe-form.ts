@@ -47,9 +47,22 @@ import { Recipe, Ingredient } from '../../models/models';
         <div formArrayName="ingredients">
           <div *ngFor="let ing of ingredients.controls; let i=index" [formGroupName]="i" class="row mb-2">
             <div class="col-md-5">
-              <select formControlName="ingredient_id" class="form-control">
-                <option *ngFor="let item of allIngredients" [value]="item.id">{{ item.name }} ({{ item.unit }})</option>
-              </select>
+              <div class="input-group">
+                <input
+                  #ingredientInput
+                  type="text"
+                  class="form-control ingredient-autocomplete"
+                  [value]="getIngredientText(i)"
+                  (input)="onIngredientInputText(i, $event.target.value)"
+                  (blur)="applyIngredientFromName(i)"
+                  (keydown.enter)="applyIngredientFromName(i)"
+                  [attr.list]="getIngredientDatalistId(i)"
+                  placeholder="Sélectionner un ingrédient"
+                />
+                <datalist [id]="getIngredientDatalistId(i)">
+                  <option *ngFor="let item of allIngredients" [value]="item.name"></option>
+                </datalist>
+              </div>
             </div>
             <div class="col-md-3">
               <input type="number" formControlName="quantity" class="form-control" placeholder="Quantité">
@@ -111,6 +124,9 @@ import { Recipe, Ingredient } from '../../models/models';
   styles: [`
     .container { margin-top: 20px; margin-bottom: 50px; }
     .ml-2 { margin-left: 10px; }
+    .ingredient-autocomplete { font-size: 0.95rem; }
+    .input-group button { min-width: 40px; }
+    .input-group button .material-icons { vertical-align: middle; }
   `]
 })
 export class RecipeFormComponent implements OnInit {
@@ -122,6 +138,7 @@ export class RecipeFormComponent implements OnInit {
   allIngredients: Ingredient[] = [];
   allRecipes: Recipe[] = [];
   showNewIngredientForm = false;
+  ingredientInputValues: Record<number, string> = {};
   markdownPreview = signal<SafeHtml>(null as unknown as SafeHtml);
 
   constructor(
@@ -149,36 +166,46 @@ export class RecipeFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadData();
     this.recipeId = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.recipeId) {
-      this.isEdit = true;
-      this.apiService.getRecipe(this.recipeId).subscribe(recipe => {
-        this.recipeForm.patchValue({
-          name: recipe.name,
-          servings: recipe.servings,
-          prep_time: recipe.prep_time,
-          cook_time: recipe.cook_time,
-          recipe_type: recipe.recipe_type,
-          instructions: recipe.instructions,
-          dependency_ids: recipe.dependencies?.map(d => d.id) || []
-        });
-        recipe.ingredients.forEach(ri => {
-          this.ingredients.push(this.fb.group({
-            ingredient_id: [ri.ingredient_id, Validators.required],
-            quantity: [ri.quantity, Validators.required]
-          }));
-        });
-        this.updatePreview(recipe.instructions);
+    
+    // Load ingredients and recipes data
+    this.apiService.getIngredients().subscribe(data => {
+      this.allIngredients = data;
+      
+      this.apiService.getRecipes().subscribe(recipes => {
+        this.allRecipes = recipes.filter(r => r.id !== this.recipeId);
+        
+        // If editing, load the recipe after data is ready
+        if (this.recipeId) {
+          this.isEdit = true;
+          this.apiService.getRecipe(this.recipeId).subscribe(recipe => {
+            this.recipeForm.patchValue({
+              name: recipe.name,
+              servings: recipe.servings,
+              prep_time: recipe.prep_time,
+              cook_time: recipe.cook_time,
+              recipe_type: recipe.recipe_type,
+              instructions: recipe.instructions,
+              dependency_ids: recipe.dependencies?.map(d => d.id) || []
+            });
+            
+            // Add ingredients to form array
+            recipe.ingredients.forEach((ri, index) => {
+              this.ingredients.push(this.fb.group({
+                ingredient_id: [ri.ingredient_id, Validators.required],
+                quantity: [ri.quantity, Validators.required]
+              }));
+              // Cache ingredient name from response or lookup by ID
+              const ingredientName = ri.ingredient?.name || this.getIngredientNameById(ri.ingredient_id);
+              if (ingredientName) {
+                this.ingredientInputValues[index] = ingredientName;
+              }
+            });
+            
+            this.updatePreview(recipe.instructions);
+          });
+        }
       });
-    }
-  }
-
-  loadData() {
-    this.apiService.getIngredients().subscribe(data => this.allIngredients = data);
-    this.apiService.getRecipes().subscribe(data => {
-        // filter out current recipe to avoid self-dependency
-        this.allRecipes = data.filter(r => r.id !== this.recipeId);
     });
   }
 
@@ -191,6 +218,39 @@ export class RecipeFormComponent implements OnInit {
 
   removeIngredient(index: number) {
     this.ingredients.removeAt(index);
+    delete this.ingredientInputValues[index];
+  }
+
+  getIngredientDatalistId(index: number): string {
+    return `ingredient-options-${index}`;
+  }
+
+  getIngredientNameById(id: number | null): string | null {
+    return this.allIngredients.find(ing => ing.id === id)?.name ?? null;
+  }
+
+  getIngredientText(index: number): string {
+    if (this.ingredientInputValues[index] !== undefined) {
+      return this.ingredientInputValues[index];
+    }
+    const control = this.ingredients.at(index);
+    const ingredientId = control?.get('ingredient_id')?.value;
+    return ingredientId ? this.getIngredientNameById(ingredientId) ?? '' : '';
+  }
+
+  onIngredientInputText(index: number, value: string) {
+    this.ingredientInputValues[index] = value;
+  }
+
+  applyIngredientFromName(index: number) {
+    const name = this.ingredientInputValues[index]?.trim();
+    const ingredient = this.allIngredients.find(ing => ing.name === name);
+    const ingredientId = ingredient ? ingredient.id : null;
+    const control = this.ingredients.at(index);
+    control?.get('ingredient_id')?.setValue(ingredientId);
+    if (!ingredientId) {
+      delete this.ingredientInputValues[index];
+    }
   }
 
   createNewIngredient(name: string, unit: string) {

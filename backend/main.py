@@ -38,7 +38,7 @@ def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depend
 
 @app.get("/ingredients/", response_model=List[schemas.Ingredient])
 def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
-    ingredients = db.query(models.Ingredient).offset(skip).limit(limit).all()
+    ingredients = db.query(models.Ingredient).order_by(models.Ingredient.name).offset(skip).limit(limit).all()
     return ingredients
 
 # --- Recipes ---

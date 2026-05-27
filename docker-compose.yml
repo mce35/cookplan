@@ -11,9 +11,12 @@ services:
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      dockerfile: ./Dockerfile
+      context: ./frontend
+      target: development
     ports:
-      - "9999:80"
+      - "9999:4200"
     depends_on:
       - backend
     restart: always

@@ -2,7 +2,7 @@ services:
   backend:
     image: cookplan-backend:1.0.0
     ports:
-      - "8888:8000"
+      - "8007:8000"
     volumes:
       - cookplan_backend_data:/app/data
     environment:

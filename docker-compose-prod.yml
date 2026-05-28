@@ -1,0 +1,21 @@
+services:
+  backend:
+    image: cookplan-backend:1.0.0
+    ports:
+      - "8888:8000"
+    volumes:
+      - cookplan_backend_data:/app/data
+    environment:
+      - SQLALCHEMY_DATABASE_URL=sqlite:///./data/recipes.db
+    restart: always
+
+  frontend:
+    image: cookplan-frontend:1.0.0
+    ports:
+      - "8006:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  cookplan_backend_data:

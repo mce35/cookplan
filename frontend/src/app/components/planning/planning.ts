@@ -14,14 +14,13 @@ import { Recipe, Planning } from '../../models/models';
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Planning</h2>
         <div class="d-flex align-items-center">
+          <div *ngIf="viewMode() === 'week'" class="mr-3 d-flex align-items-center">
+            <label for="numWeeks" class="mb-0 mr-2">Semaines à afficher:</label>
+            <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
+          </div>
           <div class="btn-group mr-3">
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semaine</button>
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mois</button>
-          </div>
-
-          <div *ngIf="viewMode() === 'week'" class="mr-3 d-flex align-items-center">
-            <label for="numWeeks" class="mb-0 mr-2">Semaines a afficher:</label>
-            <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
 
           <button (click)="previous()" class="btn btn-outline-secondary mr-2">Précédent</button>
@@ -212,7 +211,7 @@ export class PlanningComponent implements OnInit {
   recipeInputValues: Record<string, string> = {};
 
   viewMode = signal<'week' | 'month'>('week');
-  numWeeks = signal<number>(1);
+  numWeeks = signal<number>(2);
   referenceDate = signal<Date>(new Date());
 
   isSelectingShopping = false;

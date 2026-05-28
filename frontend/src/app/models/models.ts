@@ -43,4 +43,5 @@ export interface ShoppingItem {
   name: string;
   unit: string;
   quantity: number;
+  recipe_names: string;
 }

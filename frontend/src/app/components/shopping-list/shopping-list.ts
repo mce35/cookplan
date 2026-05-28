@@ -36,7 +36,7 @@ import { ShoppingItem } from '../../models/models';
         </div>
         <ul class="list-group list-group-flush">
           <li *ngFor="let item of items" class="list-group-item d-flex justify-content-between">
-            <span>{{ item.name }}</span>
+            <span>{{ item.name }} <span class="recipes-names">({{ item.recipe_names }})</span></span>
             <span><strong>{{ item.quantity }} {{ item.unit }}</strong></span>
           </li>
         </ul>
@@ -48,6 +48,7 @@ import { ShoppingItem } from '../../models/models';
   `,
   styles: [`
     .container { margin-top: 20px; }
+    .recipes-names { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
   `]
 })
 export class ShoppingListComponent implements OnInit {

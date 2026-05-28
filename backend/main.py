@@ -188,8 +188,10 @@ def get_shopping_list(
         for ri in recipe.ingredients:
             ing = ri.ingredient
             if ing.id not in shopping_list:
-                shopping_list[ing.id] = {"name": ing.name, "unit": ing.unit, "quantity": 0}
+                shopping_list[ing.id] = {"name": ing.name, "unit": ing.unit, "quantity": 0, "recipe_ids": "", "recipe_names": ""}
             shopping_list[ing.id]["quantity"] += round(ri.quantity * scale,2)
+            shopping_list[ing.id]["recipe_ids"] += ("|" + str(recipe.id)) if shopping_list[ing.id]["recipe_ids"] != "" else str(recipe.id)
+            shopping_list[ing.id]["recipe_names"] += ("|" + str(recipe.name)) if shopping_list[ing.id]["recipe_names"] != "" else str(recipe.name)
 
         for dep in recipe.dependencies:
             add_recipe_to_list(dep.id, scale, visited)

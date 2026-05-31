@@ -2,13 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { ApiService } from '../../services/api.service';
 import { Ingredient } from '../../models/models';
+import { ConfirmDialogComponent } from './confirm-dialog';
 
 @Component({
   selector: 'app-ingredient-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule],
   template: `
     <div class="container">
       <h2>Gestion des ingrédients</h2>
@@ -49,7 +52,7 @@ import { Ingredient } from '../../models/models';
               <td>
                 <div *ngIf="editIndex !== i">
                   <button class="btn btn-sm btn-outline-primary mr-2" (click)="startEdit(i)">Éditer</button>
-                  <button class="btn btn-sm btn-outline-danger mr-2" (click)="remove(ing.id)">Supprimer</button>
+                  <button class="btn btn-sm btn-outline-danger mr-2" (click)="remove(ing.id, ing.name)">Supprimer</button>
                   <button class="btn btn-sm btn-outline-info" (click)="viewRecipes(ing.name)">Recettes</button>
                 </div>
                 <div *ngIf="editIndex === i">
@@ -73,7 +76,7 @@ export class IngredientManagerComponent implements OnInit {
   editName = '';
   editUnit = '';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.reload();
@@ -116,10 +119,18 @@ export class IngredientManagerComponent implements OnInit {
     });
   }
 
-  remove(id: number | undefined) {
+  remove(id: number | undefined, name: string | undefined = '') {
     if (!id) return;
-    if (!confirm('Supprimer cet ingrédient ?')) return;
-    this.api.deleteIngredient(id).subscribe(() => this.reload());
+    if (!name) return;
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '360px',
+      data: { message: `Supprimer l'ingrédient "${name}" ?` }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) {
+        this.api.deleteIngredient(id).subscribe(() => this.reload());
+      }
+    });
   }
 
   viewRecipes(name: string | undefined) {

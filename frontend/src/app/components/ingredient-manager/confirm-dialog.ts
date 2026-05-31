@@ -11,8 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
     <h2 mat-dialog-title>Confirmation</h2>
     <div mat-dialog-content>{{ data?.message }}</div>
     <div mat-dialog-actions>
-      <button class="btn btn-sm btn-outline-primary mr-2" (click)="onCancel()">Annuler</button>
-      <button class="btn btn-sm btn-outline-danger" (click)="onConfirm()">Supprimer</button>
+      <button class="btn btn-sm btn-primary mr-2" (click)="onCancel()">Annuler</button>
+      <button class="btn btn-sm btn-danger" (click)="onConfirm()">Supprimer</button>
     </div>
   `
 })

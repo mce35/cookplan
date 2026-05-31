@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Ingredient } from '../../models/models';
 
 @Component({
   selector: 'app-recipe-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, MatSnackBarModule],
   template: `
     <div class="container">
       <h2>{{ isEdit ? 'Modifier' : 'Ajouter' }} une recette</h2>
@@ -146,7 +147,8 @@ export class RecipeFormComponent implements OnInit {
     private apiService: ApiService,
     private router: Router,
     private route: ActivatedRoute,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar
   ) {
     this.markdownPreview.set(this.sanitizer.bypassSecurityTrustHtml(''));
     this.recipeForm = this.fb.group({
@@ -255,10 +257,22 @@ export class RecipeFormComponent implements OnInit {
 
   createNewIngredient(name: string, unit: string) {
     if (name && unit) {
-      this.apiService.createIngredient({ name, unit }).subscribe(newIng => {
-        this.allIngredients.push(newIng);
-        this.showNewIngredientForm = false;
-        alert(`Ingrédient ${newIng.name} créé !`);
+      this.apiService.createIngredient({ name, unit }).subscribe({
+        next: (newIng) => {
+          this.allIngredients.push(newIng);
+          this.showNewIngredientForm = false;
+          this.snackBar.open(`Ingrédient ${newIng.name} créé !`, 'OK', {
+            duration: 3000,
+            panelClass: ['custom-snackbar']
+          });
+        },
+        error: (err) => {
+          console.error('Failed to create ingredient', err);
+          this.snackBar.open("Échec de la création de l'ingrédient", 'OK', {
+            duration: 4000,
+            panelClass: ['custom-snackbar']
+          });
+        }
       });
     }
   }

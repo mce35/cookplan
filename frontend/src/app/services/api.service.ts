@@ -21,6 +21,14 @@ export class ApiService {
     return this.http.post<Ingredient>(`${this.apiUrl}/ingredients/`, ingredient);
   }
 
+  updateIngredient(id: number, ingredient: Ingredient): Observable<Ingredient> {
+    return this.http.put<Ingredient>(`${this.apiUrl}/ingredients/${id}`, ingredient);
+  }
+
+  deleteIngredient(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/ingredients/${id}`);
+  }
+
   // Recipes
   getRecipes(): Observable<Recipe[]> {
     return this.http.get<Recipe[]>(`${this.apiUrl}/recipes/?skip=0&limit=1000`);

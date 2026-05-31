@@ -18,6 +18,9 @@ import { MatIconModule } from '@angular/material/icon';
             <a class="nav-link" routerLink="/recipes"><mat-icon style="font-size: 18px; vertical-align: middle; margin-right: 0.25rem;">restaurant</mat-icon>Recettes</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" routerLink="/ingredients"><mat-icon style="font-size: 18px; vertical-align: middle; margin-right: 0.25rem;">list_alt</mat-icon>Ingrédients</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" routerLink="/shopping-list"><mat-icon style="font-size: 18px; vertical-align: middle; margin-right: 0.25rem;">shopping_cart</mat-icon>Liste de courses</a>
           </li>
           <li class="nav-item">

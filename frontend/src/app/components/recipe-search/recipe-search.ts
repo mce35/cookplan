@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { RecipeShort, Ingredient } from '../../models/models';
 
@@ -65,16 +65,23 @@ export class RecipeSearchComponent implements OnInit {
   pageCount = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize)));
   pages = computed(() => Array.from({ length: this.pageCount() }, (_, i) => i + 1));
 
-  constructor(private apiService: ApiService) {}
+  constructor(private route: ActivatedRoute, private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
     this.apiService.getIngredients().subscribe(data => {
       this.allIngredients.set(data);
     });
+    this.route.params.subscribe(params => {
+      const name = params['name'];
+      if (name) {
+        this.searchTerm.set(name);
+        this.loadPage(1);
+      }
+    });
   }
 
   search() {
-    this.loadPage(1);
+    this.router.navigate(['/search', this.searchTerm().trim()]);
   }
 
   loadPage(page: number) {

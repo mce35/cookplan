@@ -41,6 +41,15 @@ def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get
     ingredients = db.query(models.Ingredient).order_by(models.Ingredient.name).offset(skip).limit(limit).all()
     return ingredients
 
+@app.delete("/ingredients/{ingredient_id}")
+def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
+    db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
+    if db_ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    db.delete(db_ingredient)
+    db.commit()
+    return {"message": "Ingredient deleted successfully"}
+
 # --- Recipes ---
 
 @app.post("/recipes/", response_model=schemas.Recipe)

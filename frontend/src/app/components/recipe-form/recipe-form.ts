@@ -74,7 +74,7 @@ import { MatIconModule } from '@angular/material/icon';
             </div>
           </div>
         </div>
-        <button type="button" (click)="addIngredient(undefined)" class="btn btn-success mb-3">Ajouter un ingrédient</button>
+        <button type="button" (click)="addIngredient(undefined, undefined)" class="btn btn-success mb-3">Ajouter un ingrédient</button>
         <button type="button" (click)="showNewIngredientForm = !showNewIngredientForm" class="btn btn-info mb-3 ml-2">Nouvel ingrédient</button>
 
         <div *ngIf="showNewIngredientForm" class="card mb-3 p-3">
@@ -215,11 +215,14 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
-  addIngredient(id: number | undefined) {
+  addIngredient(id: number | undefined, value: string | undefined) {
     this.ingredients.push(this.fb.group({
       ingredient_id: [id, Validators.required],
       quantity: [null, Validators.required]
     }));
+    if (value) {
+      this.ingredientInputValues[this.ingredients.length - 1] = value;
+    }
   }
 
   removeIngredient(index: number) {
@@ -264,7 +267,7 @@ export class RecipeFormComponent implements OnInit {
       this.apiService.createIngredient({ name, unit }).subscribe({
         next: (newIng) => {
           this.allIngredients.push(newIng);
-          this.addIngredient(newIng.id);
+          this.addIngredient(newIng.id, newIng.name);
           this.showNewIngredientForm = false;
           this.snackBar.open(`Ingrédient ${newIng.name} créé !`, 'OK', {
             duration: 3000,

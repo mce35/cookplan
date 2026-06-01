@@ -101,6 +101,18 @@ import { MatIconModule } from '@angular/material/icon';
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
                 </div>
+                <div class="recipe-input-row">
+                  <input
+                    #noteMidiInput
+                    type="text"
+                    class="form-control form-control-sm"
+                    [ngModel]="getNoteText(day, 'midi')"
+                    (ngModelChange)="onNoteInputText(day, 'midi', $event)"
+                    (blur)="saveNote(day, 'midi')"
+                    (keydown.enter)="saveNote(day, 'midi')"
+                    placeholder="-- Note --"
+                  />
+                </div>
             </div>
           </div>
 
@@ -144,6 +156,18 @@ import { MatIconModule } from '@angular/material/icon';
                   <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
                     <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
                   </button>
+                </div>
+                <div class="recipe-input-row">
+                  <input
+                    #noteSoirInput
+                    type="text"
+                    class="form-control form-control-sm"
+                    [ngModel]="getNoteText(day, 'soir')"
+                    (ngModelChange)="onNoteInputText(day, 'soir', $event)"
+                    (blur)="saveNote(day, 'soir')"
+                    (keydown.enter)="saveNote(day, 'soir')"
+                    placeholder="-- Note --"
+                  />
                 </div>
             </div>
           </div>
@@ -211,6 +235,7 @@ export class PlanningComponent implements OnInit {
   recipes = signal<Recipe[]>([]);
   planningData = signal<Planning[]>([]);
   recipeInputValues: Record<string, string> = {};
+  noteInputValues: Record<string, string> = {};
 
   viewMode = signal<'week' | 'month'>('week');
   numWeeks = signal<number>(2);
@@ -370,6 +395,57 @@ export class PlanningComponent implements OnInit {
         data.push(savedPlan);
       }
       this.planningData.set(data);
+    });
+  }
+
+  getNoteInputKey(date: Date, mealType: string): string {
+    return `${this.formatDate(date)}|${mealType}`;
+  }
+
+  getNoteText(date: Date, mealType: string): string {
+    const key = this.getNoteInputKey(date, mealType);
+    if (this.noteInputValues[key] !== undefined) {
+      return this.noteInputValues[key];
+    }
+    const dateStr = this.formatDate(date);
+    const plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
+    return plan?.note ?? '';
+  }
+
+  onNoteInputText(date: Date, mealType: string, value: string) {
+    const key = this.getNoteInputKey(date, mealType);
+    this.noteInputValues[key] = value;
+  }
+
+  saveNote(date: Date, mealType: string) {
+    const key = this.getNoteInputKey(date, mealType);
+    const note = this.noteInputValues[key];
+    const dateStr = this.formatDate(date);
+    let plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
+
+    if (!plan) {
+      plan = { date: dateStr, meal_type: mealType };
+    } else {
+      plan = { ...plan }; // Clone
+    }
+
+    plan.note = note || undefined;
+
+    this.apiService.upsertPlanning(plan).subscribe(savedPlan => {
+      const data = [...this.planningData()];
+      const index = data.findIndex(p => p.date === dateStr && p.meal_type === mealType);
+      if (index > -1) {
+        data[index] = savedPlan;
+      } else {
+        data.push(savedPlan);
+      }
+      this.planningData.set(data);
+      // Keep the input value in sync with what was saved
+      if (savedPlan.note) {
+        this.noteInputValues[key] = savedPlan.note;
+      } else {
+        delete this.noteInputValues[key];
+      }
     });
   }
 

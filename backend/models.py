@@ -61,6 +61,7 @@ class Planning(Base):
     # We want a main dish and a side dish for each meal
     main_recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=True)
     side_recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=True)
+    note = Column(String, nullable=True)  # Notes for the meal
 
     main_recipe = relationship("Recipe", foreign_keys=[main_recipe_id])
     side_recipe = relationship("Recipe", foreign_keys=[side_recipe_id])

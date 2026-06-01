@@ -53,6 +53,7 @@ class PlanningBase(BaseModel):
     meal_type: str # midi, soir
     main_recipe_id: Optional[int] = None
     side_recipe_id: Optional[int] = None
+    note: Optional[str] = None
 
 class PlanningCreate(PlanningBase):
     pass

@@ -2,9 +2,12 @@ from fastapi import FastAPI, Depends, HTTPException, status, Response, Query
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
-import models, schemas, database
+import models, schemas, database, migrations
 from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
+
+# Run migrations before creating tables
+migrations.run_migrations()
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -161,6 +164,7 @@ def create_or_update_planning(plan: schemas.PlanningCreate, db: Session = Depend
     if db_plan:
         db_plan.main_recipe_id = plan.main_recipe_id
         db_plan.side_recipe_id = plan.side_recipe_id
+        db_plan.note = plan.note
     else:
         db_plan = models.Planning(**plan.model_dump())
         db.add(db_plan)

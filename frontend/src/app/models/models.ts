@@ -35,6 +35,7 @@ export interface Planning {
   meal_type: string;
   main_recipe_id?: number;
   side_recipe_id?: number;
+  note?: string;
   main_recipe?: RecipeShort;
   side_recipe?: RecipeShort;
 }

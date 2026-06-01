@@ -12,6 +12,19 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
+  // Authentication
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login/`, { username, password });
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+  }
+
   // Ingredients
   getIngredients(): Observable<Ingredient[]> {
     return this.http.get<Ingredient[]>(`${this.apiUrl}/ingredients/`);

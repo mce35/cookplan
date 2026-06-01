@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Response, Query
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
-import models, schemas, database, migrations
+import models, schemas, database, migrations, auth
 from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 migrations.run_migrations()
 
 models.Base.metadata.create_all(bind=engine)
+
+# Initialize default user
+migrations.initialize_default_user()
 
 app = FastAPI()
 
@@ -29,10 +32,26 @@ def get_db():
     finally:
         db.close()
 
+# --- Authentication ---
+
+@app.post("/login/", response_model=schemas.Token)
+def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+    """Login endpoint to get JWT token"""
+    user = db.query(models.User).filter(models.User.username == user_login.username).first()
+    
+    if not user or not auth.verify_password(user_login.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    
+    access_token = auth.create_access_token(user.id)
+    return {"access_token": access_token, "token_type": "bearer"}
+
 # --- Ingredients ---
 
 @app.post("/ingredients/", response_model=schemas.Ingredient)
-def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depends(get_db)):
+def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_ingredient = models.Ingredient(**ingredient.model_dump())
     db.add(db_ingredient)
     db.commit()
@@ -40,12 +59,12 @@ def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depend
     return db_ingredient
 
 @app.get("/ingredients/", response_model=List[schemas.Ingredient])
-def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     ingredients = db.query(models.Ingredient).order_by(models.Ingredient.name).offset(skip).limit(limit).all()
     return ingredients
 
 @app.delete("/ingredients/{ingredient_id}")
-def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
+def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
     if db_ingredient is None:
         raise HTTPException(status_code=404, detail="Ingredient not found")
@@ -56,7 +75,7 @@ def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
 # --- Recipes ---
 
 @app.post("/recipes/", response_model=schemas.Recipe)
-def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     # Extract nested data
     ingredients_data = recipe.ingredients
     dependency_ids = recipe.dependency_ids
@@ -90,7 +109,7 @@ def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
     return db_recipe
 
 @app.get("/recipes/", response_model=List[schemas.Recipe])
-def read_recipes(response: Response, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_recipes(response: Response, skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     total = db.query(models.Recipe).count()
     response.headers["X-Total-Count"] = str(total)
     response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"
@@ -98,14 +117,14 @@ def read_recipes(response: Response, skip: int = 0, limit: int = 100, db: Sessio
     return recipes
 
 @app.get("/recipes/{recipe_id}", response_model=schemas.Recipe)
-def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
+def read_recipe(recipe_id: int, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
     if db_recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found")
     return db_recipe
 
 @app.put("/recipes/{recipe_id}", response_model=schemas.Recipe)
-def update_recipe(recipe_id: int, recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+def update_recipe(recipe_id: int, recipe: schemas.RecipeCreate, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
     if db_recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -136,7 +155,7 @@ def update_recipe(recipe_id: int, recipe: schemas.RecipeCreate, db: Session = De
     return db_recipe
 
 @app.delete("/recipes/{recipe_id}")
-def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
     if db_recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -147,7 +166,7 @@ def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
 # --- Planning ---
 
 @app.get("/planning/", response_model=List[schemas.Planning])
-def read_planning(start_date: date, end_date: date, db: Session = Depends(get_db)):
+def read_planning(start_date: date, end_date: date, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     planning = db.query(models.Planning).filter(
         models.Planning.date >= start_date,
         models.Planning.date <= end_date
@@ -155,7 +174,7 @@ def read_planning(start_date: date, end_date: date, db: Session = Depends(get_db
     return planning
 
 @app.post("/planning/", response_model=schemas.Planning)
-def create_or_update_planning(plan: schemas.PlanningCreate, db: Session = Depends(get_db)):
+def create_or_update_planning(plan: schemas.PlanningCreate, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_plan = db.query(models.Planning).filter(
         models.Planning.date == plan.date,
         models.Planning.meal_type == plan.meal_type
@@ -180,7 +199,8 @@ def get_shopping_list(
     start_date: date,
     end_date: date,
     persons: int = Query(1, ge=1),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: int = Depends(auth.verify_token)
 ):
     plans = db.query(models.Planning).filter(
         models.Planning.date >= start_date,
@@ -229,7 +249,8 @@ def get_recipes_by_ingredient(
     response: Response,
     skip: int = 0,
     limit: int = 20,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: int = Depends(auth.verify_token)
 ):
     query = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
         models.Ingredient.name.ilike(f"%{ingredient_name}%")

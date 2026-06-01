@@ -10,6 +10,13 @@ recipe_dependencies = Table(
     Column("child_recipe_id", Integer, ForeignKey("recipes.id"), primary_key=True),
 )
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+
 class Recipe(Base):
     __tablename__ = "recipes"
 

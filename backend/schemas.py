@@ -2,6 +2,18 @@ from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import date
 
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class IngredientBase(BaseModel):
     name: str
     unit: str

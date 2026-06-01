@@ -1,7 +1,10 @@
 """Database migrations"""
 from sqlalchemy import text, inspect
 from sqlalchemy.orm import Session
-from database import engine
+from database import engine, SessionLocal
+import models
+import auth
+import os
 
 def run_migrations():
     """Run pending database migrations"""
@@ -23,4 +26,30 @@ def run_migrations():
         print(f"Migration warning: {e}")
         # Migrations may fail if table doesn't exist yet, which is fine
         # The table will be created by create_all() after this
+
+def initialize_default_user():
+    """Create default user if it doesn't exist"""
+    db = SessionLocal()
+    try:
+        # Check if any user exists
+        existing_user = db.query(models.User).first()
+        if not existing_user:
+            # Get credentials from environment or use defaults
+            default_username = os.getenv("DEFAULT_USERNAME", "admin")
+            default_password = os.getenv("DEFAULT_PASSWORD", "admin")
+            
+            # Create default user
+            user = models.User(
+                username=default_username,
+                hashed_password=auth.hash_password(default_password)
+            )
+            db.add(user)
+            db.commit()
+            print(f"Created default user: {default_username}")
+            print("IMPORTANT: Please change the password after first login!")
+    except Exception as e:
+        print(f"Error creating default user: {e}")
+    finally:
+        db.close()
+
 

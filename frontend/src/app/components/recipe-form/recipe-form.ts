@@ -6,11 +6,12 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Ingredient } from '../../models/models';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-recipe-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, MatSnackBarModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, MatSnackBarModule, MatIconModule],
   template: `
     <div class="container">
       <h2>{{ isEdit ? 'Modifier' : 'Ajouter' }} une recette</h2>
@@ -69,15 +70,15 @@ import { Recipe, Ingredient } from '../../models/models';
               <input type="number" formControlName="quantity" class="form-control" placeholder="Quantité">
             </div>
             <div class="col-md-2">
-              <button type="button" (click)="removeIngredient(i)" class="btn btn-danger">X</button>
+              <button type="button" (click)="removeIngredient(i)" class="btn btn-danger"><mat-icon style="font-size: 18px; vertical-align: middle;">delete</mat-icon></button>
             </div>
           </div>
         </div>
-        <button type="button" (click)="addIngredient()" class="btn btn-secondary mb-3">Ajouter un ingrédient</button>
-        <button type="button" (click)="showNewIngredientForm = !showNewIngredientForm" class="btn btn-info mb-3 ml-2">Nouvel ingrédient type</button>
+        <button type="button" (click)="addIngredient(undefined)" class="btn btn-success mb-3">Ajouter un ingrédient</button>
+        <button type="button" (click)="showNewIngredientForm = !showNewIngredientForm" class="btn btn-info mb-3 ml-2">Nouvel ingrédient</button>
 
         <div *ngIf="showNewIngredientForm" class="card mb-3 p-3">
-          <h5>Créer un nouvel ingrédient type</h5>
+          <h5>Créer un nouvel ingrédient</h5>
           <div class="row">
             <div class="col-md-5">
               <input #newIngName type="text" class="form-control" placeholder="Nom">
@@ -86,7 +87,10 @@ import { Recipe, Ingredient } from '../../models/models';
               <input #newIngUnit type="text" class="form-control" placeholder="Unité (g, ml, unité...)">
             </div>
             <div class="col-md-2">
-              <button type="button" (click)="createNewIngredient(newIngName.value, newIngUnit.value)" class="btn btn-success">OK</button>
+              <div class="btn-group">
+                <button type="button" (click)="createNewIngredient(newIngName.value, newIngUnit.value)" class="btn btn-success"><mat-icon style="font-size: 18px; vertical-align: middle">check</mat-icon></button>
+                <button type="button" (click)="showNewIngredientForm = false" class="btn btn-secondary"><mat-icon style="font-size: 18px; vertical-align: middle">cancel</mat-icon></button>
+              </div>
             </div>
           </div>
         </div>
@@ -99,7 +103,7 @@ import { Recipe, Ingredient } from '../../models/models';
         </div>
 
         <div class="form-group">
-          <label for="instructions">Instructions / Étapes</label>
+          <span class="mr-2"><label for="instructions">Instructions / Étapes</label></span>
           <div class="btn-group mb-2" role="group" aria-label="Markdown formatting">
             <button type="button" class="btn btn-outline-secondary" (click)="formatBold()">Gras</button>
             <button type="button" class="btn btn-outline-secondary" (click)="formatItalic()">Italique</button>
@@ -211,9 +215,9 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
-  addIngredient() {
+  addIngredient(id: number | undefined) {
     this.ingredients.push(this.fb.group({
-      ingredient_id: [null, Validators.required],
+      ingredient_id: [id, Validators.required],
       quantity: [null, Validators.required]
     }));
   }
@@ -256,10 +260,11 @@ export class RecipeFormComponent implements OnInit {
   }
 
   createNewIngredient(name: string, unit: string) {
-    if (name && unit) {
+    if (name) {
       this.apiService.createIngredient({ name, unit }).subscribe({
         next: (newIng) => {
           this.allIngredients.push(newIng);
+          this.addIngredient(newIng.id);
           this.showNewIngredientForm = false;
           this.snackBar.open(`Ingrédient ${newIng.name} créé !`, 'OK', {
             duration: 3000,

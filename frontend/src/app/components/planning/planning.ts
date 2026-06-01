@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Planning } from '../../models/models';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-planning',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   template: `
     <div class="container-fluid">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -22,10 +23,11 @@ import { Recipe, Planning } from '../../models/models';
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semaine</button>
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mois</button>
           </div>
-
-          <button (click)="previous()" class="btn btn-outline-secondary mr-2">Précédent</button>
-          <button (click)="goToToday()" class="btn btn-primary mr-2">Aujourd'hui</button>
-          <button (click)="next()" class="btn btn-outline-secondary mr-3">Suivant</button>
+          <div class="btn-group mr-3">
+            <button (click)="previous()" class="btn btn-outline-secondary"><mat-icon style="font-size: 22px; vertical-align: middle">chevron_left</mat-icon></button>
+            <button (click)="goToToday()" class="btn btn-primary">Aujourd'hui</button>
+            <button (click)="next()" class="btn btn-outline-secondary"><mat-icon style="font-size: 22px; vertical-align: middle">chevron_right</mat-icon></button>
+          </div>
 
           <button (click)="toggleShoppingSelect()" class="btn" [class.btn-success]="!isSelectingShopping" [class.btn-danger]="isSelectingShopping">
             {{ isSelectingShopping ? 'Annuler Courses' : 'Générer Courses' }}

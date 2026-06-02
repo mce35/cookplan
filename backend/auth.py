@@ -7,7 +7,8 @@ import os
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 15  # 15 minutes
+REFRESH_TOKEN_EXPIRE_DAYS = 60  # 60 days
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -28,13 +29,21 @@ def create_access_token(user_id: int, expires_delta: Optional[timedelta] = None)
         expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     expire = datetime.now(timezone.utc) + expires_delta
-    to_encode = {"sub": str(user_id), "exp": expire}
+    to_encode = {"sub": str(user_id), "exp": expire, "type": "access"}
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def create_refresh_token(user_id: int) -> str:
+    """Create a JWT refresh token"""
+    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode = {"sub": str(user_id), "exp": expire, "type": "refresh"}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 def verify_token(authorization: Optional[str] = Header(None)) -> int:
-    """Verify JWT token from Authorization header and return user_id"""
+    """Verify JWT access token from Authorization header and return user_id"""
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -55,7 +64,9 @@ def verify_token(authorization: Optional[str] = Header(None)) -> int:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
-        if user_id is None:
+        token_type: str = payload.get("type")
+        
+        if user_id is None or token_type != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
@@ -68,4 +79,18 @@ def verify_token(authorization: Optional[str] = Header(None)) -> int:
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def verify_refresh_token(refresh_token: str) -> int:
+    """Verify JWT refresh token and return user_id"""
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        token_type: str = payload.get("type")
+        
+        if user_id is None or token_type != "refresh":
+            raise JWTError
+        return int(user_id)
+    except JWTError:
+        return None
 

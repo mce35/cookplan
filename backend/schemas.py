@@ -10,8 +10,12 @@ class UserRegister(BaseModel):
     username: str
     password: str
 
+class RefreshToken(BaseModel):
+    refresh_token: str
+
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
 
 class IngredientBase(BaseModel):

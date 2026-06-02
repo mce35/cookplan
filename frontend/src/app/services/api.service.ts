@@ -17,12 +17,18 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/login/`, { username, password });
   }
 
+  refresh(): Observable<any> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.http.post<any>(`${this.apiUrl}/refresh/`, { refresh_token: refreshToken });
+  }
+
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
   }
 
   // Ingredients

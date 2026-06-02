@@ -36,7 +36,7 @@ def get_db():
 
 @app.post("/login/", response_model=schemas.Token)
 def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
-    """Login endpoint to get JWT token"""
+    """Login endpoint to get JWT tokens"""
     user = db.query(models.User).filter(models.User.username == user_login.username).first()
     
     if not user or not auth.verify_password(user_login.password, user.hashed_password):
@@ -46,7 +46,31 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
         )
     
     access_token = auth.create_access_token(user.id)
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = auth.create_refresh_token(user.id)
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+@app.post("/refresh/", response_model=schemas.Token)
+def refresh(refresh_data: schemas.RefreshToken, db: Session = Depends(get_db)):
+    """Refresh endpoint to get a new access token using a refresh token"""
+    user_id = auth.verify_refresh_token(refresh_data.refresh_token)
+    
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+    
+    # Verify user still exists
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+    
+    new_access_token = auth.create_access_token(user.id)
+    new_refresh_token = auth.create_refresh_token(user.id)
+    return {"access_token": new_access_token, "refresh_token": new_refresh_token, "token_type": "bearer"}
 
 # --- Ingredients ---
 

@@ -127,6 +127,7 @@ export class LoginComponent {
     this.apiService.login(this.username, this.password).subscribe({
       next: (response) => {
         localStorage.setItem('token', response.access_token);
+        localStorage.setItem('refreshToken', response.refresh_token);
         this.router.navigate(['/planning']);
       },
       error: (err) => {

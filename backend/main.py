@@ -231,7 +231,7 @@ def get_shopping_list(
         models.Planning.date <= end_date
     ).all()
 
-    shopping_list = {} # ingredient_id -> {name, unit, quantity}
+    shopping_list = {} # ingredient_id -> {name, unit, quantity, recipe_ids, recipe_names}
 
     def add_recipe_to_list(recipe_id, scale=1, visited=None):
         if not recipe_id: return
@@ -245,10 +245,11 @@ def get_shopping_list(
         for ri in recipe.ingredients:
             ing = ri.ingredient
             if ing.id not in shopping_list:
-                shopping_list[ing.id] = {"name": ing.name, "unit": ing.unit, "quantity": 0, "recipe_ids": "", "recipe_names": ""}
+                shopping_list[ing.id] = {"name": ing.name, "unit": ing.unit, "quantity": 0, "recipe_ids": set(), "recipe_names": ""}
             shopping_list[ing.id]["quantity"] += round(ri.quantity * scale,2)
-            shopping_list[ing.id]["recipe_ids"] += ("|" + str(recipe.id)) if shopping_list[ing.id]["recipe_ids"] != "" else str(recipe.id)
-            shopping_list[ing.id]["recipe_names"] += ("|" + str(recipe.name)) if shopping_list[ing.id]["recipe_names"] != "" else str(recipe.name)
+            if recipe.id not in shopping_list[ing.id]["recipe_ids"]:
+                shopping_list[ing.id]["recipe_ids"].add(recipe.id)
+                shopping_list[ing.id]["recipe_names"] += ("|" + str(recipe.name)) if shopping_list[ing.id]["recipe_names"] != "" else str(recipe.name)
 
         for dep in recipe.dependencies:
             add_recipe_to_list(dep.id, scale, visited)

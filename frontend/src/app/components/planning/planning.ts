@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Planning } from '../../models/models';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-planning',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
   template: `
     <div class="container-fluid">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -246,18 +247,26 @@ export class PlanningComponent implements OnInit {
   shoppingEnd: Date | null = null;
   persons: number = 4;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(private apiService: ApiService, private router: Router, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.loadRecipes();
   }
 
   private async loadRecipes(): Promise<void> {
+    try {
     const recipes = await this.apiService.getRecipes().toPromise();
-    if(recipes) {
-      this.recipes.set(recipes);
+      if(recipes) {
+        this.recipes.set(recipes);
+      }
+      this.updateRange();
+    } catch (error) {
+      console.error("Cannot load recipes:", error);
+      this.snackBar.open("Impossible de charger les recettes", 'OK', {
+        duration: 4000,
+        panelClass: ['custom-snackbar']
+      });
     }
-    this.updateRange();
   }
 
   get gridColumns() {

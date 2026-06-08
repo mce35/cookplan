@@ -78,8 +78,8 @@ import { MatIconModule } from '@angular/material/icon';
                   <datalist [id]="getDatalistId(day, 'midi', 'main')">
                     <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
                   </datalist>
-                  <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
-                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                  <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
+                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                   </button>
                 </div>
                 <div class="recipe-input-row">
@@ -98,7 +98,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
                   </datalist>
                   <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
-                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                   </button>
                 </div>
                 <div class="recipe-input-row">
@@ -135,7 +135,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
                   </datalist>
                   <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
-                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                   </button>
                 </div>
                 <div class="recipe-input-row">
@@ -154,7 +154,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
                   </datalist>
                   <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
-                    <span class="material-icons" style="font-size: 18px; line-height: 1;">arrow_forward</span>
+                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                   </button>
                 </div>
                 <div class="recipe-input-row">
@@ -249,8 +249,15 @@ export class PlanningComponent implements OnInit {
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
+    this.loadRecipes();
+  }
+
+  private async loadRecipes(): Promise<void> {
+    const recipes = await this.apiService.getRecipes().toPromise();
+    if(recipes) {
+      this.recipes.set(recipes);
+    }
     this.updateRange();
-    this.apiService.getRecipes().subscribe(data => this.recipes.set(data));
   }
 
   get gridColumns() {
@@ -327,7 +334,8 @@ export class PlanningComponent implements OnInit {
   getPlanId(date: Date, mealType: string, recipeType: 'main' | 'side'): number | null {
     const dateStr = this.formatDate(date);
     const plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
-    if (!plan) return null;
+    if (!plan)
+      return null;
     return recipeType === 'main' ? (plan.main_recipe_id ?? null) : (plan.side_recipe_id ?? null);
   }
 

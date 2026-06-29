@@ -528,7 +528,7 @@ export class PlanningComponent implements OnInit {
 
   applyRecipeFromName(date: Date, mealType: string, recipeType: 'main' | 'side') {
     const key = this.getInputKey(date, mealType, recipeType);
-    const name = this.recipeInputValues[key]?.trim();
+    const name = this.recipeInputValues[key]??'';
     const wantedType = recipeType === 'main' ? 'plat' : 'accompagnement';
     const recipe = this.recipes().find(r => r.recipe_type === wantedType && r.name === name);
     const recipeId = recipe ? recipe.id : null;

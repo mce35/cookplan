@@ -48,7 +48,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
         </div>
       </div>
 
-      <div class="planning-grid" [style.grid-template-columns]="gridColumns">
+      <div class="planning-grid">
         <div *ngFor="let day of displayDays()"
              class="day-card"
              [class.selecting]="isSelectingShopping"
@@ -65,42 +65,56 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
             <div class="meal-label">Midi</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
                 <div class="recipe-input-row mb-1">
-                  <input
-                    #mainMidiInput
-                    type="text"
-                    class="form-control form-control-sm recipe-autocomplete"
-                    [ngModel]="getRecipeText(day, 'midi', 'main')"
-                    (ngModelChange)="onRecipeInputText(day, 'midi', 'main', $event)"
-                    (blur)="applyRecipeFromName(day, 'midi', 'main')"
-                    (keydown.enter)="applyRecipeFromName(day, 'midi', 'main')"
-                    [attr.list]="getDatalistId(day, 'midi', 'main')"
-                    placeholder="-- Plat --"
-                  />
-                  <datalist [id]="getDatalistId(day, 'midi', 'main')">
-                    <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
-                  </datalist>
-                  <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
-                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
-                  </button>
+                  <div class="input-suggestion-box">
+                    <input
+                      #mainMidiInput
+                      type="text"
+                      autocomplete="off"
+                      class="form-control form-control-sm recipe-autocomplete"
+                      [ngModel]="getRecipeText(day, 'midi', 'main')"
+                      (focus)="activateSuggestions(day, 'midi', 'main')"
+                      (ngModelChange)="onRecipeInputText(day, 'midi', 'main', $event)"
+                      (blur)="blurSuggestions(); applyRecipeFromName(day, 'midi', 'main')"
+                      (keydown.enter)="applyRecipeFromName(day, 'midi', 'main')"
+                      placeholder="-- Plat --"
+                    />
+                    <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
+                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    </button>
+                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'main') && getSuggestions(day, 'midi', 'main').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'main')"
+                        (mousedown)="selectSuggestion(day, 'midi', 'main', suggestion.name)"
+                        (touchstart)="selectSuggestion(day, 'midi', 'main', suggestion.name)">
+                        {{ suggestion.name }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div class="recipe-input-row">
-                  <input
-                    #sideMidiInput
-                    type="text"
-                    class="form-control form-control-sm recipe-autocomplete"
-                    [ngModel]="getRecipeText(day, 'midi', 'side')"
-                    (ngModelChange)="onRecipeInputText(day, 'midi', 'side', $event)"
-                    (blur)="applyRecipeFromName(day, 'midi', 'side')"
-                    (keydown.enter)="applyRecipeFromName(day, 'midi', 'side')"
-                    [attr.list]="getDatalistId(day, 'midi', 'side')"
-                    placeholder="-- Accomp. --"
-                  />
-                  <datalist [id]="getDatalistId(day, 'midi', 'side')">
-                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
-                  </datalist>
-                  <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
-                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
-                  </button>
+                  <div class="input-suggestion-box">
+                    <input
+                      #sideMidiInput
+                      type="text"
+                      autocomplete="off"
+                      class="form-control form-control-sm recipe-autocomplete"
+                      [ngModel]="getRecipeText(day, 'midi', 'side')"
+                      (focus)="activateSuggestions(day, 'midi', 'side')"
+                      (ngModelChange)="onRecipeInputText(day, 'midi', 'side', $event)"
+                      (blur)="blurSuggestions(); applyRecipeFromName(day, 'midi', 'side')"
+                      (keydown.enter)="applyRecipeFromName(day, 'midi', 'side')"
+                      placeholder="-- Accomp. --"
+                    />
+                    <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
+                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    </button>
+                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'side') && getSuggestions(day, 'midi', 'side').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'side')"
+                        (mousedown)="selectSuggestion(day, 'midi', 'side', suggestion.name)"
+                        (touchstart)="selectSuggestion(day, 'midi', 'side', suggestion.name)">
+                        {{ suggestion.name }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div class="recipe-input-row">
                   <input
@@ -121,42 +135,56 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
             <div class="meal-label">Soir</div>
             <div class="recipe-select-group" (click)="$event.stopPropagation()">
                 <div class="recipe-input-row mb-1">
-                  <input
-                    #mainSoirInput
-                    type="text"
-                    class="form-control form-control-sm recipe-autocomplete"
-                    [ngModel]="getRecipeText(day, 'soir', 'main')"
-                    (ngModelChange)="onRecipeInputText(day, 'soir', 'main', $event)"
-                    (blur)="applyRecipeFromName(day, 'soir', 'main')"
-                    (keydown.enter)="applyRecipeFromName(day, 'soir', 'main')"
-                    [attr.list]="getDatalistId(day, 'soir', 'main')"
-                    placeholder="-- Plat --"
-                  />
-                  <datalist [id]="getDatalistId(day, 'soir', 'main')">
-                    <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
-                  </datalist>
-                  <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
-                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
-                  </button>
+                  <div class="input-suggestion-box">
+                    <input
+                      #mainSoirInput
+                      type="text"
+                      autocomplete="off"
+                      class="form-control form-control-sm recipe-autocomplete"
+                      [ngModel]="getRecipeText(day, 'soir', 'main')"
+                      (focus)="activateSuggestions(day, 'soir', 'main')"
+                      (ngModelChange)="onRecipeInputText(day, 'soir', 'main', $event)"
+                      (blur)="blurSuggestions(); applyRecipeFromName(day, 'soir', 'main')"
+                      (keydown.enter)="applyRecipeFromName(day, 'soir', 'main')"
+                      placeholder="-- Plat --"
+                    />
+                    <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
+                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    </button>
+                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'main') && getSuggestions(day, 'soir', 'main').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'main')"
+                        (mousedown)="selectSuggestion(day, 'soir', 'main', suggestion.name)"
+                        (touchstart)="selectSuggestion(day, 'soir', 'main', suggestion.name)">
+                        {{ suggestion.name }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div class="recipe-input-row">
-                  <input
-                    #sideSoirInput
-                    type="text"
-                    class="form-control form-control-sm recipe-autocomplete"
-                    [ngModel]="getRecipeText(day, 'soir', 'side')"
-                    (ngModelChange)="onRecipeInputText(day, 'soir', 'side', $event)"
-                    (blur)="applyRecipeFromName(day, 'soir', 'side')"
-                    (keydown.enter)="applyRecipeFromName(day, 'soir', 'side')"
-                    [attr.list]="getDatalistId(day, 'soir', 'side')"
-                    placeholder="-- Accomp. --"
-                  />
-                  <datalist [id]="getDatalistId(day, 'soir', 'side')">
-                    <option *ngFor="let r of recipesByType('accompagnement')" [value]="r.name"></option>
-                  </datalist>
-                  <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
-                    <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
-                  </button>
+                  <div class="input-suggestion-box">
+                    <input
+                      #sideSoirInput
+                      type="text"
+                      autocomplete="off"
+                      class="form-control form-control-sm recipe-autocomplete"
+                      [ngModel]="getRecipeText(day, 'soir', 'side')"
+                      (focus)="activateSuggestions(day, 'soir', 'side')"
+                      (ngModelChange)="onRecipeInputText(day, 'soir', 'side', $event)"
+                      (blur)="blurSuggestions(); applyRecipeFromName(day, 'soir', 'side')"
+                      (keydown.enter)="applyRecipeFromName(day, 'soir', 'side')"
+                      placeholder="-- Accomp. --"
+                    />
+                    <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
+                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    </button>
+                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'side') && getSuggestions(day, 'soir', 'side').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'side')"
+                        (mousedown)="selectSuggestion(day, 'soir', 'side', suggestion.name)"
+                        (touchstart)="selectSuggestion(day, 'soir', 'side', suggestion.name)">
+                        {{ suggestion.name }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div class="recipe-input-row">
                   <input
@@ -180,8 +208,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .planning-grid {
       display: grid;
       gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-auto-flow: row;
+      width: 100%;
     }
     .day-card {
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
       border: 1px solid #c3e6cb;
       border-radius: 5px;
       padding: 5px;
@@ -223,7 +257,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     }
     .meal-section { margin-bottom: 10px; }
     .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
-    .recipe-select-group .recipe-input-row { display: flex; align-items: center; margin-bottom: 4px; }
+    .recipe-select-group .recipe-input-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; position: relative; }
+    .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: wrap; align-items: center; gap: 6px; position: relative; }
+    .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; }
+    .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; }
+    .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 5px 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+    .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
+    .recipe-select-group .suggestion-item:hover { background-color: #f1f1f1; }
     .recipe-select-group .recipe-autocomplete { font-size: 0.75rem; }
     .recipe-select-group .recipe-dropdown-button { min-width: 34px; }
     .recipe-select-group .recipe-dropdown-button .material-icons { vertical-align: middle; }
@@ -237,6 +277,8 @@ export class PlanningComponent implements OnInit {
   planningData = signal<Planning[]>([]);
   recipeInputValues: Record<string, string> = {};
   noteInputValues: Record<string, string> = {};
+  activeSuggestionKey: string | null = null;
+  suggestionHideTimeout?: number;
 
   viewMode = signal<'week' | 'month'>('week');
   numWeeks = signal<number>(2);
@@ -267,10 +309,6 @@ export class PlanningComponent implements OnInit {
         panelClass: ['custom-snackbar']
       });
     }
-  }
-
-  get gridColumns() {
-    return `repeat(${this.viewMode() === 'month' ? 7 : Math.min(this.displayDays().length, 7)}, 1fr)`;
   }
 
   setViewMode(mode: 'week' | 'month') {
@@ -352,6 +390,13 @@ export class PlanningComponent implements OnInit {
     return `${this.formatDate(date)}|${mealType}|${recipeType}`;
   }
 
+  /*
+    [attr.list]="getDatalistId(day, 'soir', 'main')"
+    ...
+    <datalist [id]="getDatalistId(day, 'soir', 'main')">
+      <option *ngFor="let r of recipesByType('plat')" [value]="r.name"></option>
+    </datalist>
+  */
   getDatalistId(date: Date, mealType: string, recipeType: 'main' | 'side'): string {
     return `recipe-options-${this.formatDate(date)}-${mealType}-${recipeType}`;
   }
@@ -367,6 +412,45 @@ export class PlanningComponent implements OnInit {
     }
     const planId = this.getPlanId(date, mealType, recipeType);
     return planId ? this.getRecipeNameById(planId) ?? '' : '';
+  }
+
+  activateSuggestions(date: Date, mealType: string, recipeType: 'main' | 'side') {
+    this.cancelSuggestionHide();
+    this.activeSuggestionKey = this.getInputKey(date, mealType, recipeType);
+  }
+
+  blurSuggestions() {
+    this.suggestionHideTimeout = window.setTimeout(() => {
+      this.activeSuggestionKey = null;
+      this.suggestionHideTimeout = undefined;
+    }, 150);
+  }
+
+  cancelSuggestionHide() {
+    if (this.suggestionHideTimeout !== undefined) {
+      clearTimeout(this.suggestionHideTimeout);
+      this.suggestionHideTimeout = undefined;
+    }
+  }
+
+  getSuggestions(date: Date, mealType: string, recipeType: 'main' | 'side') {
+    const key = this.getInputKey(date, mealType, recipeType);
+    const text = this.recipeInputValues[key]?.trim().toLowerCase() ?? '';
+    if (!text) {
+      return [];
+    }
+    const wantedType = recipeType === 'main' ? 'plat' : 'accompagnement';
+    return this.recipes()
+      .filter(r => r.recipe_type === wantedType && r.name.toLowerCase().includes(text))
+      .slice(0, 15);
+  }
+
+  selectSuggestion(date: Date, mealType: string, recipeType: 'main' | 'side', recipeName: string) {
+    const key = this.getInputKey(date, mealType, recipeType);
+    this.recipeInputValues[key] = recipeName;
+    this.applyRecipeFromName(date, mealType, recipeType);
+    this.activeSuggestionKey = null;
+    this.cancelSuggestionHide();
   }
 
   onRecipeInputText(date: Date, mealType: string, recipeType: 'main' | 'side', value: string) {

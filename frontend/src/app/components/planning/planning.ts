@@ -75,14 +75,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (focus)="activateSuggestions(day, 'midi', 'main')"
                       (ngModelChange)="onRecipeInputText(day, 'midi', 'main', $event)"
                       (blur)="blurSuggestions(); applyRecipeFromName(day, 'midi', 'main')"
-                      (keydown.enter)="applyRecipeFromName(day, 'midi', 'main')"
+                      (keydown)="onRecipeInputKeydown($event, day, 'midi', 'main')"
                       placeholder="-- Plat --"
                     />
                     <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
                       <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
-                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'main') && getSuggestions(day, 'midi', 'main').length">
-                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'main')"
+                    <div id="{{getSuggestionListId(day, 'midi', 'main')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'main') && getSuggestions(day, 'midi', 'main').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'main'); let i = index"
+                        [class.highlighted]="getHighlightedIndex(getInputKey(day, 'midi', 'main')) === i"
                         (mousedown)="selectSuggestion(day, 'midi', 'main', suggestion.name)"
                         (touchstart)="selectSuggestion(day, 'midi', 'main', suggestion.name)">
                         {{ suggestion.name }}
@@ -101,14 +102,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (focus)="activateSuggestions(day, 'midi', 'side')"
                       (ngModelChange)="onRecipeInputText(day, 'midi', 'side', $event)"
                       (blur)="blurSuggestions(); applyRecipeFromName(day, 'midi', 'side')"
-                      (keydown.enter)="applyRecipeFromName(day, 'midi', 'side')"
+                      (keydown)="onRecipeInputKeydown($event, day, 'midi', 'side')"
                       placeholder="-- Accomp. --"
                     />
                     <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
                       <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
-                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'side') && getSuggestions(day, 'midi', 'side').length">
-                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'side')"
+                    <div id="{{getSuggestionListId(day, 'midi', 'side')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'side') && getSuggestions(day, 'midi', 'side').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'side'); let i = index"
+                        [class.highlighted]="getHighlightedIndex(getInputKey(day, 'midi', 'side')) === i"
                         (mousedown)="selectSuggestion(day, 'midi', 'side', suggestion.name)"
                         (touchstart)="selectSuggestion(day, 'midi', 'side', suggestion.name)">
                         {{ suggestion.name }}
@@ -145,14 +147,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (focus)="activateSuggestions(day, 'soir', 'main')"
                       (ngModelChange)="onRecipeInputText(day, 'soir', 'main', $event)"
                       (blur)="blurSuggestions(); applyRecipeFromName(day, 'soir', 'main')"
-                      (keydown.enter)="applyRecipeFromName(day, 'soir', 'main')"
+                      (keydown)="onRecipeInputKeydown($event, day, 'soir', 'main')"
                       placeholder="-- Plat --"
                     />
                     <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
                       <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
-                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'main') && getSuggestions(day, 'soir', 'main').length">
-                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'main')"
+                    <div id="{{getSuggestionListId(day, 'soir', 'main')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'main') && getSuggestions(day, 'soir', 'main').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'main'); let i = index"
+                        [class.highlighted]="getHighlightedIndex(getInputKey(day, 'soir', 'main')) === i"
                         (mousedown)="selectSuggestion(day, 'soir', 'main', suggestion.name)"
                         (touchstart)="selectSuggestion(day, 'soir', 'main', suggestion.name)">
                         {{ suggestion.name }}
@@ -171,14 +174,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (focus)="activateSuggestions(day, 'soir', 'side')"
                       (ngModelChange)="onRecipeInputText(day, 'soir', 'side', $event)"
                       (blur)="blurSuggestions(); applyRecipeFromName(day, 'soir', 'side')"
-                      (keydown.enter)="applyRecipeFromName(day, 'soir', 'side')"
+                      (keydown)="onRecipeInputKeydown($event, day, 'soir', 'side')"
                       placeholder="-- Accomp. --"
                     />
                     <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
                       <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
-                    <div class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'side') && getSuggestions(day, 'soir', 'side').length">
-                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'side')"
+                    <div id="{{getSuggestionListId(day, 'soir', 'side')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'side') && getSuggestions(day, 'soir', 'side').length">
+                      <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'side'); let i = index"
+                        [class.highlighted]="getHighlightedIndex(getInputKey(day, 'soir', 'side')) === i"
                         (mousedown)="selectSuggestion(day, 'soir', 'side', suggestion.name)"
                         (touchstart)="selectSuggestion(day, 'soir', 'side', suggestion.name)">
                         {{ suggestion.name }}
@@ -264,6 +268,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 5px 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
     .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
     .recipe-select-group .suggestion-item:hover { background-color: #f1f1f1; }
+    .recipe-select-group .suggestion-item.highlighted { background-color: #e9ecef; }
     .recipe-select-group .recipe-autocomplete { font-size: 0.75rem; }
     .recipe-select-group .recipe-dropdown-button { min-width: 34px; }
     .recipe-select-group .recipe-dropdown-button .material-icons { vertical-align: middle; }
@@ -279,6 +284,7 @@ export class PlanningComponent implements OnInit {
   noteInputValues: Record<string, string> = {};
   activeSuggestionKey: string | null = null;
   suggestionHideTimeout?: number;
+  suggestionIndices: Record<string, number> = {};
 
   viewMode = signal<'week' | 'month'>('week');
   numWeeks = signal<number>(2);
@@ -421,9 +427,69 @@ export class PlanningComponent implements OnInit {
 
   blurSuggestions() {
     this.suggestionHideTimeout = window.setTimeout(() => {
+      // clear highlighted index for the currently active input
+      if (this.activeSuggestionKey) {
+        this.suggestionIndices[this.activeSuggestionKey] = -1;
+      }
       this.activeSuggestionKey = null;
       this.suggestionHideTimeout = undefined;
     }, 150);
+  }
+
+  getHighlightedIndex(key: string) {
+    return this.suggestionIndices[key] ?? -1;
+  }
+
+  onRecipeInputKeydown(event: KeyboardEvent, date: Date, mealType: string, recipeType: 'main' | 'side') {
+    const key = this.getInputKey(date, mealType, recipeType);
+    const suggestions = this.getSuggestions(date, mealType, recipeType);
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.activeSuggestionKey = key;
+      const current = this.suggestionIndices[key] ?? -1;
+      const next = suggestions.length ? (current + 1) % suggestions.length : -1;
+      this.suggestionIndices[key] = next;
+      this.scrollSuggestionIntoView(date, mealType, recipeType, next);
+      this.cancelSuggestionHide();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.activeSuggestionKey = key;
+      const current = this.suggestionIndices[key] ?? -1;
+      const next = suggestions.length ? (current <= 0 ? suggestions.length - 1 : current - 1) : -1;
+      this.suggestionIndices[key] = next;
+      this.scrollSuggestionIntoView(date, mealType, recipeType, next);
+      this.cancelSuggestionHide();
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const idx = this.suggestionIndices[key] ?? -1;
+      if (idx >= 0 && suggestions[idx]) {
+        this.selectSuggestion(date, mealType, recipeType, suggestions[idx].name);
+      } else {
+        this.applyRecipeFromName(date, mealType, recipeType);
+      }
+    } else if (event.key === 'Escape') {
+      this.activeSuggestionKey = null;
+    }
+  }
+
+  getSuggestionListId(date: Date, mealType: string, recipeType: 'main' | 'side') {
+    return `suggestions-${this.formatDate(date)}-${mealType}-${recipeType}`;
+  }
+
+  scrollSuggestionIntoView(date: Date, mealType: string, recipeType: 'main' | 'side', index: number) {
+    if (index == null || index < 0) return;
+    const id = this.getSuggestionListId(date, mealType, recipeType);
+    // use setTimeout to ensure DOM is updated
+    setTimeout(() => {
+      const list = document.getElementById(id);
+      if (!list) return;
+      const items = list.querySelectorAll('.suggestion-item');
+      const el = items[index] as HTMLElement | undefined;
+      if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    }, 0);
   }
 
   cancelSuggestionHide() {
@@ -449,6 +515,7 @@ export class PlanningComponent implements OnInit {
     const key = this.getInputKey(date, mealType, recipeType);
     this.recipeInputValues[key] = recipeName;
     this.applyRecipeFromName(date, mealType, recipeType);
+    this.suggestionIndices[key] = -1;
     this.activeSuggestionKey = null;
     this.cancelSuggestionHide();
   }
@@ -456,6 +523,7 @@ export class PlanningComponent implements OnInit {
   onRecipeInputText(date: Date, mealType: string, recipeType: 'main' | 'side', value: string) {
     const key = this.getInputKey(date, mealType, recipeType);
     this.recipeInputValues[key] = value;
+    this.suggestionIndices[key] = -1;
   }
 
   applyRecipeFromName(date: Date, mealType: string, recipeType: 'main' | 'side') {

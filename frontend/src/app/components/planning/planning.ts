@@ -78,8 +78,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (keydown)="onRecipeInputKeydown($event, day, 'midi', 'main')"
                       placeholder="-- Plat --"
                     />
-                    <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
-                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    <button *ngIf="getPlanId(day, 'midi', 'main')" type="button" class="btn btn-xs btn-outline-info p-0" (click)="viewRecipe(getPlanId(day, 'midi', 'main'))">
+                      <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
                     <div id="{{getSuggestionListId(day, 'midi', 'main')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'main') && getSuggestions(day, 'midi', 'main').length">
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'main'); let i = index"
@@ -105,8 +105,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (keydown)="onRecipeInputKeydown($event, day, 'midi', 'side')"
                       placeholder="-- Accomp. --"
                     />
-                    <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
-                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    <button *ngIf="getPlanId(day, 'midi', 'side')" type="button" class="btn btn-sm btn-outline-info p-0" (click)="viewRecipe(getPlanId(day, 'midi', 'side'))">
+                      <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
                     <div id="{{getSuggestionListId(day, 'midi', 'side')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'midi', 'side') && getSuggestions(day, 'midi', 'side').length">
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'side'); let i = index"
@@ -150,8 +150,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (keydown)="onRecipeInputKeydown($event, day, 'soir', 'main')"
                       placeholder="-- Plat --"
                     />
-                    <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
-                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    <button *ngIf="getPlanId(day, 'soir', 'main')" type="button" class="btn btn-sm btn-outline-info p-0" (click)="viewRecipe(getPlanId(day, 'soir', 'main'))">
+                      <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
                     <div id="{{getSuggestionListId(day, 'soir', 'main')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'main') && getSuggestions(day, 'soir', 'main').length">
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'main'); let i = index"
@@ -177,8 +177,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       (keydown)="onRecipeInputKeydown($event, day, 'soir', 'side')"
                       placeholder="-- Accomp. --"
                     />
-                    <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info ml-2 p-1" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
-                      <mat-icon style="font-size: 1.5em; vertical-align: middle;">arrow_forward</mat-icon>
+                    <button *ngIf="getPlanId(day, 'soir', 'side')" type="button" class="btn btn-sm btn-outline-info p-0" (click)="viewRecipe(getPlanId(day, 'soir', 'side'))">
+                      <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
                     </button>
                     <div id="{{getSuggestionListId(day, 'soir', 'side')}}" class="suggestion-list" *ngIf="activeSuggestionKey === getInputKey(day, 'soir', 'side') && getSuggestions(day, 'soir', 'side').length">
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'side'); let i = index"
@@ -262,9 +262,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .meal-section { margin-bottom: 10px; }
     .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
     .recipe-select-group .recipe-input-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; position: relative; }
-    .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: wrap; align-items: center; gap: 6px; position: relative; }
-    .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; }
-    .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; }
+    .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: nowrap; align-items: center; gap: 6px; position: relative; }
+    .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; max-width: 100%; }
+    .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; white-space: nowrap; }
     .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 5px 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
     .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
     .recipe-select-group .suggestion-item:hover { background-color: #f1f1f1; }

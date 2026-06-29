@@ -13,24 +13,24 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
   template: `
     <div class="container-fluid">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <h2>Planning</h2>
-        <div class="d-flex align-items-center">
+        <div class="d-flex flex-wrap align-items-center">
           <div *ngIf="viewMode() === 'week'" class="mr-3 d-flex align-items-center">
             <label for="numWeeks" class="mb-0 mr-2">Semaines à afficher:</label>
             <input id="numWeeks" type="number" [ngModel]="numWeeks()" (ngModelChange)="numWeeks.set($event); updateRange()" class="form-control form-control-sm" style="width: 60px" min="1" max="8">
           </div>
-          <div class="btn-group mr-3">
+          <div class="btn-group mr-3 mt-1">
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semaine</button>
             <button class="btn btn-outline-primary" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mois</button>
           </div>
-          <div class="btn-group mr-3">
+          <div class="btn-group mr-3 mt-1">
             <button (click)="previous()" class="btn btn-outline-secondary"><mat-icon style="font-size: 22px; vertical-align: middle">chevron_left</mat-icon></button>
             <button (click)="goToToday()" class="btn btn-primary">Aujourd'hui</button>
             <button (click)="next()" class="btn btn-outline-secondary"><mat-icon style="font-size: 22px; vertical-align: middle">chevron_right</mat-icon></button>
           </div>
 
-          <button (click)="toggleShoppingSelect()" class="btn" [class.btn-success]="!isSelectingShopping" [class.btn-danger]="isSelectingShopping">
+          <button (click)="toggleShoppingSelect()" class="btn mt-1" [class.btn-success]="!isSelectingShopping" [class.btn-danger]="isSelectingShopping">
             {{ isSelectingShopping ? 'Annuler Courses' : 'Générer Courses' }}
           </button>
         </div>

@@ -85,7 +85,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'main'); let i = index"
                         [class.highlighted]="getHighlightedIndex(getInputKey(day, 'midi', 'main')) === i"
                         (mousedown)="selectSuggestion(day, 'midi', 'main', suggestion.name)"
-                        (touchstart)="selectSuggestion(day, 'midi', 'main', suggestion.name)">
+                        (touchstart)="onSuggestionTouchStart($event)"
+                        (touchmove)="onSuggestionTouchMove($event)"
+                        (touchend)="onSuggestionTouchEnd($event, day, 'midi', 'main', suggestion.name)">
                         {{ suggestion.name }}
                       </button>
                     </div>
@@ -112,7 +114,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'midi', 'side'); let i = index"
                         [class.highlighted]="getHighlightedIndex(getInputKey(day, 'midi', 'side')) === i"
                         (mousedown)="selectSuggestion(day, 'midi', 'side', suggestion.name)"
-                        (touchstart)="selectSuggestion(day, 'midi', 'side', suggestion.name)">
+                        (touchstart)="onSuggestionTouchStart($event)"
+                        (touchmove)="onSuggestionTouchMove($event)"
+                        (touchend)="onSuggestionTouchEnd($event, day, 'midi', 'side', suggestion.name)">
                         {{ suggestion.name }}
                       </button>
                     </div>
@@ -157,7 +161,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'main'); let i = index"
                         [class.highlighted]="getHighlightedIndex(getInputKey(day, 'soir', 'main')) === i"
                         (mousedown)="selectSuggestion(day, 'soir', 'main', suggestion.name)"
-                        (touchstart)="selectSuggestion(day, 'soir', 'main', suggestion.name)">
+                        (touchstart)="onSuggestionTouchStart($event)"
+                        (touchmove)="onSuggestionTouchMove($event)"
+                        (touchend)="onSuggestionTouchEnd($event, day, 'soir', 'main', suggestion.name)">
                         {{ suggestion.name }}
                       </button>
                     </div>
@@ -184,7 +190,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                       <button type="button" class="suggestion-item" *ngFor="let suggestion of getSuggestions(day, 'soir', 'side'); let i = index"
                         [class.highlighted]="getHighlightedIndex(getInputKey(day, 'soir', 'side')) === i"
                         (mousedown)="selectSuggestion(day, 'soir', 'side', suggestion.name)"
-                        (touchstart)="selectSuggestion(day, 'soir', 'side', suggestion.name)">
+                        (touchstart)="onSuggestionTouchStart($event)"
+                        (touchmove)="onSuggestionTouchMove($event)"
+                        (touchend)="onSuggestionTouchEnd($event, day, 'soir', 'side', suggestion.name)">
                         {{ suggestion.name }}
                       </button>
                     </div>
@@ -285,6 +293,8 @@ export class PlanningComponent implements OnInit {
   activeSuggestionKey: string | null = null;
   suggestionHideTimeout?: number;
   suggestionIndices: Record<string, number> = {};
+  touchStartPoint: { x: number; y: number } | null = null;
+  touchMoved = false;
 
   viewMode = signal<'week' | 'month'>('week');
   numWeeks = signal<number>(2);
@@ -524,6 +534,37 @@ export class PlanningComponent implements OnInit {
     const key = this.getInputKey(date, mealType, recipeType);
     this.recipeInputValues[key] = value;
     this.suggestionIndices[key] = -1;
+  }
+
+  onSuggestionTouchStart(event: TouchEvent) {
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      this.touchStartPoint = { x: touch.clientX, y: touch.clientY };
+      this.touchMoved = false;
+    }
+  }
+
+  onSuggestionTouchMove(event: TouchEvent) {
+    if (!this.touchStartPoint || event.touches.length !== 1) {
+      this.touchMoved = true;
+      return;
+    }
+
+    const touch = event.touches[0];
+    const dx = touch.clientX - this.touchStartPoint.x;
+    const dy = touch.clientY - this.touchStartPoint.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > 10) {
+      this.touchMoved = true;
+    }
+  }
+
+  onSuggestionTouchEnd(event: TouchEvent, date: Date, mealType: string, recipeType: 'main' | 'side', recipeName: string) {
+    if (!this.touchMoved) {
+      this.selectSuggestion(date, mealType, recipeType, recipeName);
+    }
+    this.touchStartPoint = null;
+    this.touchMoved = false;
   }
 
   applyRecipeFromName(date: Date, mealType: string, recipeType: 'main' | 'side') {

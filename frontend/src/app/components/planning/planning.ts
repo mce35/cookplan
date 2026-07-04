@@ -129,6 +129,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     class="form-control form-control-sm"
                     [ngModel]="getNoteText(day, 'midi')"
                     (ngModelChange)="onNoteInputText(day, 'midi', $event)"
+                    (focus)="activateNote(day, 'midi')"
                     (blur)="saveNote(day, 'midi')"
                     (keydown.enter)="saveNote(day, 'midi')"
                     placeholder="-- Note --"
@@ -205,6 +206,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     class="form-control form-control-sm"
                     [ngModel]="getNoteText(day, 'soir')"
                     (ngModelChange)="onNoteInputText(day, 'soir', $event)"
+                    (focus)="activateNote(day, 'soir')"
                     (blur)="saveNote(day, 'soir')"
                     (keydown.enter)="saveNote(day, 'soir')"
                     placeholder="-- Note --"
@@ -220,7 +222,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .planning-grid {
       display: grid;
       gap: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       grid-auto-flow: row;
       width: 100%;
     }
@@ -273,10 +275,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: nowrap; align-items: center; gap: 6px; position: relative; }
     .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; max-width: 100%; }
     .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; white-space: nowrap; }
-    .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 5px 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
-    .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
+    .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 300px; font-size: 0.75rem; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+    .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; border-radius: 10px; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
     .recipe-select-group .suggestion-item:hover { background-color: #f1f1f1; }
-    .recipe-select-group .suggestion-item.highlighted { background-color: #e9ecef; }
+    .recipe-select-group .suggestion-item.highlighted { background-color: #007bff; }
     .recipe-select-group .recipe-autocomplete { font-size: 0.75rem; }
     .recipe-select-group .recipe-dropdown-button { min-width: 34px; }
     .recipe-select-group .recipe-dropdown-button .material-icons { vertical-align: middle; }
@@ -291,7 +293,6 @@ export class PlanningComponent implements OnInit {
   recipeInputValues: Record<string, string> = {};
   noteInputValues: Record<string, string> = {};
   activeSuggestionKey: string | null = null;
-  suggestionHideTimeout?: number;
   suggestionIndices: Record<string, number> = {};
   touchStartPoint: { x: number; y: number } | null = null;
   touchMoved = false;
@@ -431,19 +432,15 @@ export class PlanningComponent implements OnInit {
   }
 
   activateSuggestions(date: Date, mealType: string, recipeType: 'main' | 'side') {
-    this.cancelSuggestionHide();
     this.activeSuggestionKey = this.getInputKey(date, mealType, recipeType);
+    this.recipeInputValues[this.activeSuggestionKey] = this.getRecipeText(date, mealType, recipeType);
   }
 
   blurSuggestions() {
-    this.suggestionHideTimeout = window.setTimeout(() => {
-      // clear highlighted index for the currently active input
-      if (this.activeSuggestionKey) {
-        this.suggestionIndices[this.activeSuggestionKey] = -1;
-      }
-      this.activeSuggestionKey = null;
-      this.suggestionHideTimeout = undefined;
-    }, 150);
+    if (this.activeSuggestionKey) {
+      delete this.suggestionIndices[this.activeSuggestionKey];
+    }
+    this.activeSuggestionKey = null;
   }
 
   getHighlightedIndex(key: string) {
@@ -461,7 +458,6 @@ export class PlanningComponent implements OnInit {
       const next = suggestions.length ? (current + 1) % suggestions.length : -1;
       this.suggestionIndices[key] = next;
       this.scrollSuggestionIntoView(date, mealType, recipeType, next);
-      this.cancelSuggestionHide();
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
       this.activeSuggestionKey = key;
@@ -469,7 +465,6 @@ export class PlanningComponent implements OnInit {
       const next = suggestions.length ? (current <= 0 ? suggestions.length - 1 : current - 1) : -1;
       this.suggestionIndices[key] = next;
       this.scrollSuggestionIntoView(date, mealType, recipeType, next);
-      this.cancelSuggestionHide();
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const idx = this.suggestionIndices[key] ?? -1;
@@ -502,32 +497,21 @@ export class PlanningComponent implements OnInit {
     }, 0);
   }
 
-  cancelSuggestionHide() {
-    if (this.suggestionHideTimeout !== undefined) {
-      clearTimeout(this.suggestionHideTimeout);
-      this.suggestionHideTimeout = undefined;
-    }
-  }
-
   getSuggestions(date: Date, mealType: string, recipeType: 'main' | 'side') {
     const key = this.getInputKey(date, mealType, recipeType);
     const text = this.recipeInputValues[key]?.trim().toLowerCase() ?? '';
-    if (!text) {
-      return [];
-    }
     const wantedType = recipeType === 'main' ? 'plat' : 'accompagnement';
     return this.recipes()
       .filter(r => r.recipe_type === wantedType && r.name.toLowerCase().includes(text))
-      .slice(0, 15);
+      .slice(0, 300);
   }
 
   selectSuggestion(date: Date, mealType: string, recipeType: 'main' | 'side', recipeName: string) {
     const key = this.getInputKey(date, mealType, recipeType);
     this.recipeInputValues[key] = recipeName;
     this.applyRecipeFromName(date, mealType, recipeType);
-    this.suggestionIndices[key] = -1;
+    delete this.suggestionIndices[key];
     this.activeSuggestionKey = null;
-    this.cancelSuggestionHide();
   }
 
   onRecipeInputText(date: Date, mealType: string, recipeType: 'main' | 'side', value: string) {
@@ -591,8 +575,14 @@ export class PlanningComponent implements OnInit {
 
     const id = recipeId ? Number(recipeId) : undefined;
     if (recipeType === 'main') {
+      if (plan.main_recipe_id === id) {
+        return; // No change
+      }
       plan.main_recipe_id = id;
     } else {
+      if (plan.side_recipe_id === id) {
+        return; // No change
+      }
       plan.side_recipe_id = id;
     }
 
@@ -622,6 +612,11 @@ export class PlanningComponent implements OnInit {
     return plan?.note ?? '';
   }
 
+  activateNote(date: Date, mealType: string) {
+    const key = this.getNoteInputKey(date, mealType);
+    this.noteInputValues[key] = this.getNoteText(date, mealType);
+  }
+
   onNoteInputText(date: Date, mealType: string, value: string) {
     const key = this.getNoteInputKey(date, mealType);
     this.noteInputValues[key] = value;
@@ -637,6 +632,10 @@ export class PlanningComponent implements OnInit {
       plan = { date: dateStr, meal_type: mealType };
     } else {
       plan = { ...plan }; // Clone
+    }
+
+    if (plan.note === note || (plan.note == null && !note)) {
+      return; // No change
     }
 
     plan.note = note || undefined;

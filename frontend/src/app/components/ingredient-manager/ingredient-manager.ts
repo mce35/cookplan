@@ -33,6 +33,7 @@ import { ConfirmDialogComponent } from './confirm-dialog';
 
       <div class="card p-3">
         <h5>Ingrédients existants</h5>
+        <input [(ngModel)]="searchTerm" class="form-control mb-3" placeholder="Rechercher un ingrédient">
         <table class="table table-sm">
           <thead>
             <tr>
@@ -42,20 +43,20 @@ import { ConfirmDialogComponent } from './confirm-dialog';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let ing of ingredients; let i = index">
-              <td *ngIf="editIndex !== i">{{ ing.name }}</td>
-              <td *ngIf="editIndex === i"><input [(ngModel)]="editName" class="form-control"></td>
+            <tr *ngFor="let ing of filteredIngredients">
+              <td *ngIf="editIndex !== ing">{{ ing.name }}</td>
+              <td *ngIf="editIndex === ing"><input [(ngModel)]="editName" class="form-control"></td>
 
-              <td *ngIf="editIndex !== i">{{ ing.unit }}</td>
-              <td *ngIf="editIndex === i"><input [(ngModel)]="editUnit" class="form-control"></td>
+              <td *ngIf="editIndex !== ing">{{ ing.unit }}</td>
+              <td *ngIf="editIndex === ing"><input [(ngModel)]="editUnit" class="form-control"></td>
 
               <td>
-                <div *ngIf="editIndex !== i">
-                  <button class="btn btn-sm btn-outline-primary mr-2" (click)="startEdit(i)">Éditer</button>
+                <div *ngIf="editIndex !== ing">
+                  <button class="btn btn-sm btn-outline-primary mr-2" (click)="startEdit(ing)">Éditer</button>
                   <button class="btn btn-sm btn-outline-danger mr-2" (click)="remove(ing.id, ing.name)">Supprimer</button>
                   <button class="btn btn-sm btn-outline-info" (click)="viewRecipes(ing.name)">Recettes</button>
                 </div>
-                <div *ngIf="editIndex === i">
+                <div *ngIf="editIndex === ing">
                   <button class="btn btn-sm btn-primary mr-2" (click)="saveEdit(ing.id)">Enregistrer</button>
                   <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Annuler</button>
                 </div>
@@ -71,8 +72,9 @@ export class IngredientManagerComponent implements OnInit {
   ingredients: Ingredient[] = [];
   newName = '';
   newUnit = '';
+  searchTerm = '';
 
-  editIndex: number | null = null;
+  editIndex: Ingredient | null = null;
   editName = '';
   editUnit = '';
 
@@ -80,6 +82,14 @@ export class IngredientManagerComponent implements OnInit {
 
   ngOnInit(): void {
     this.reload();
+  }
+
+  get filteredIngredients(): Ingredient[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.ingredients;
+    return this.ingredients.filter(ingredient =>
+      (ingredient.name || '').toLowerCase().includes(term)
+    );
   }
 
   reload() {
@@ -98,10 +108,10 @@ export class IngredientManagerComponent implements OnInit {
     });
   }
 
-  startEdit(index: number) {
-    this.editIndex = index;
-    this.editName = this.ingredients[index].name || '';
-    this.editUnit = this.ingredients[index].unit || '';
+  startEdit(ingredient: Ingredient) {
+    this.editIndex = ingredient;
+    this.editName = ingredient.name || '';
+    this.editUnit = ingredient.unit || '';
   }
 
   cancelEdit() {

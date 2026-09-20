@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Recipe, Ingredient, Planning, ShoppingItem, RecipeShort } from '../models/models';
 import { environment } from '../../environments/environment';
@@ -91,7 +91,10 @@ export class ApiService {
   // Search
   searchRecipesByIngredient(name: string, page = 1, pageSize = 10): Observable<HttpResponse<RecipeShort[]>> {
     const skip = (page - 1) * pageSize;
-    const encodedName = encodeURIComponent(name);
-    return this.http.get<RecipeShort[]>(`${this.apiUrl}/recipes-by-ingredient/${encodedName}?skip=${skip}&limit=${pageSize}`, { observe: 'response' });
+    const params = new HttpParams()
+      .set('ingredient_name', name)
+      .set('skip', skip)
+      .set('limit', pageSize);
+    return this.http.get<RecipeShort[]>(`${this.apiUrl}/recipes-by-ingredient/`, { params, observe: 'response' });
   }
 }

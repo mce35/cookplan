@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
@@ -268,17 +269,17 @@ def get_shopping_list(
 
 # --- Search ---
 
-@app.get("/recipes-by-ingredient/{ingredient_name}", response_model=List[schemas.RecipeShort])
+@app.get("/recipes-by-ingredient/", response_model=List[schemas.RecipeShort])
 def get_recipes_by_ingredient(
-    ingredient_name: str,
     response: Response,
+    ingredient_name: str = Query(...),
     skip: int = 0,
     limit: int = 20,
     db: Session = Depends(get_db),
     user_id: int = Depends(auth.verify_token)
 ):
     query = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
-        models.Ingredient.name.ilike(f"%{ingredient_name}%")
+        func.lower(models.Ingredient.name).like(func.lower(f"%{ingredient_name}%"))
     ).order_by(models.Recipe.name)
     total = query.count()
     response.headers["X-Total-Count"] = str(total)

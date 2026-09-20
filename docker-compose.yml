@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8888:8000"
+      - "8123:8000"
     volumes:
       - ./backend:/app
       - backend_data:/app/data

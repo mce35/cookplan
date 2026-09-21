@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -10,36 +10,36 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
   standalone: true,
   imports: [CommonModule, RouterModule, MarkdownPipe],
   template: `
-    <div class="container mt-4" *ngIf="recipe">
+    <div class="container mt-4" *ngIf="recipe()">
       <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h2 class="mb-0">{{ recipe.name }}</h2>
+          <h2 class="mb-0">{{ recipe()!.name }}</h2>
           <div>
-            <a [routerLink]="['/recipes', recipe.id, 'edit']" class="btn btn-warning btn-sm mr-2">Modifier</a>
+            <a [routerLink]="['/recipes', recipe()!.id, 'edit']" class="btn btn-warning btn-sm mr-2">Modifier</a>
             <button (click)="deleteRecipe()" class="btn btn-danger btn-sm">Supprimer</button>
           </div>
         </div>
         <div class="card-body">
           <div class="row mb-4">
-            <div class="col-md-3"><strong>Type:</strong> {{ recipe.recipe_type }}</div>
-            <div class="col-md-3"><strong>Personnes:</strong> {{ recipe.servings }}</div>
-            <div class="col-md-3"><strong>Prép:</strong> {{ recipe.prep_time }} min</div>
-            <div class="col-md-3"><strong>Cuisson:</strong> {{ recipe.cook_time }} min</div>
+            <div class="col-md-3"><strong>Type:</strong> {{ recipe()!.recipe_type }}</div>
+            <div class="col-md-3"><strong>Personnes:</strong> {{ recipe()!.servings }}</div>
+            <div class="col-md-3"><strong>Prép:</strong> {{ recipe()!.prep_time }} min</div>
+            <div class="col-md-3"><strong>Cuisson:</strong> {{ recipe()!.cook_time }} min</div>
           </div>
 
           <hr>
 
           <h4>Ingrédients</h4>
           <ul class="list-group list-group-flush mb-4">
-            <li *ngFor="let ri of recipe.ingredients" class="list-group-item">
+            <li *ngFor="let ri of recipe()!.ingredients" class="list-group-item">
               {{ ri.quantity }} {{ ri.ingredient?.unit }} {{ ri.ingredient?.name }}
             </li>
           </ul>
 
-          <div *ngIf="recipe.dependencies && recipe.dependencies.length > 0" class="mb-4">
+          <div *ngIf="recipe()!.dependencies && recipe()!.dependencies!.length > 0" class="mb-4">
             <h4>Dépendances</h4>
             <div class="list-group">
-              <a *ngFor="let dep of recipe.dependencies" [routerLink]="['/recipes', dep.id]" class="list-group-item list-group-item-action py-1">
+              <a *ngFor="let dep of recipe()!.dependencies" [routerLink]="['/recipes', dep.id]" class="list-group-item list-group-item-action py-1">
                 {{ dep.name }}
               </a>
             </div>
@@ -47,7 +47,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
 
           <h4>Instructions</h4>
           <div class="bg-light p-3 rounded recipe-instructions">
-            <div [innerHTML]="recipe.instructions | markdown"></div>
+            <div [innerHTML]="recipe()!.instructions | markdown"></div>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
   `]
 })
 export class RecipeDetailComponent implements OnInit {
-  recipe?: Recipe;
+  recipe = signal<Recipe | undefined>(undefined);
 
   constructor(
     private route: ActivatedRoute,
@@ -72,7 +72,7 @@ export class RecipeDetailComponent implements OnInit {
       const id = Number(params['id']);
       if (id) {
         this.apiService.getRecipe(id).subscribe({
-            next: data => this.recipe = data,
+            next: data => this.recipe.set(data),
             error: err => console.error('Error fetching recipe', err)
         });
       }
@@ -80,8 +80,9 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   deleteRecipe(): void {
-    if (this.recipe && this.recipe.id && confirm('Voulez-vous vraiment supprimer cette recette ?')) {
-      this.apiService.deleteRecipe(this.recipe.id).subscribe(() => {
+    const recipe = this.recipe();
+    if (recipe?.id && confirm('Voulez-vous vraiment supprimer cette recette ?')) {
+      this.apiService.deleteRecipe(recipe.id).subscribe(() => {
         this.router.navigate(['/recipes']);
       });
     }

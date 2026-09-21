@@ -62,7 +62,7 @@ import { MatIconModule } from '@angular/material/icon';
                   placeholder="Sélectionner un ingrédient"
                 />
                 <datalist [id]="getIngredientDatalistId(i)">
-                  <option *ngFor="let item of allIngredients" [value]="item.name"></option>
+                  <option *ngFor="let item of allIngredients()" [value]="item.name"></option>
                 </datalist>
               </div>
             </div>
@@ -98,7 +98,7 @@ import { MatIconModule } from '@angular/material/icon';
         <div class="form-group">
           <label for="dependency_ids">Dépendances (Préparations de base)</label>
           <select multiple id="dependency_ids" class="form-control" formControlName="dependency_ids">
-            <option *ngFor="let r of allRecipes" [value]="r.id">{{ r.name }}</option>
+            <option *ngFor="let r of allRecipes()" [value]="r.id">{{ r.name }}</option>
           </select>
         </div>
 
@@ -140,8 +140,8 @@ export class RecipeFormComponent implements OnInit {
   recipeForm: FormGroup;
   isEdit = false;
   recipeId?: number;
-  allIngredients: Ingredient[] = [];
-  allRecipes: Recipe[] = [];
+  allIngredients = signal<Ingredient[]>([]);
+  allRecipes = signal<Recipe[]>([]);
   showNewIngredientForm = false;
   ingredientInputValues: Record<number, string> = {};
   markdownPreview = signal<SafeHtml>(null as unknown as SafeHtml);
@@ -176,10 +176,10 @@ export class RecipeFormComponent implements OnInit {
     
     // Load ingredients and recipes data
     this.apiService.getIngredients().subscribe(data => {
-      this.allIngredients = data;
+      this.allIngredients.set(data);
       
       this.apiService.getRecipes().subscribe(recipes => {
-        this.allRecipes = recipes.filter(r => r.id !== this.recipeId);
+        this.allRecipes.set(recipes.filter(r => r.id !== this.recipeId));
         
         // If editing, load the recipe after data is ready
         if (this.recipeId) {
@@ -235,7 +235,7 @@ export class RecipeFormComponent implements OnInit {
   }
 
   getIngredientNameById(id: number | null): string | null {
-    return this.allIngredients.find(ing => ing.id === id)?.name ?? null;
+    return this.allIngredients().find(ing => ing.id === id)?.name ?? null;
   }
 
   getIngredientText(index: number): string {
@@ -253,7 +253,7 @@ export class RecipeFormComponent implements OnInit {
 
   applyIngredientFromName(index: number) {
     const name = this.ingredientInputValues[index]?.trim();
-    const ingredient = this.allIngredients.find(ing => ing.name === name);
+    const ingredient = this.allIngredients().find(ing => ing.name === name);
     const ingredientId = ingredient ? ingredient.id : null;
     const control = this.ingredients.at(index);
     control?.get('ingredient_id')?.setValue(ingredientId);
@@ -266,7 +266,7 @@ export class RecipeFormComponent implements OnInit {
     if (name) {
       this.apiService.createIngredient({ name, unit }).subscribe({
         next: (newIng) => {
-          this.allIngredients.push(newIng);
+          this.allIngredients.update(ingredients => [...ingredients, newIng]);
           this.addIngredient(newIng.id, newIng.name);
           this.showNewIngredientForm = false;
           this.snackBar.open(`Ingrédient ${newIng.name} créé !`, 'OK', {

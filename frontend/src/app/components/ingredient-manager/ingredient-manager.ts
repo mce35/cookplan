@@ -168,7 +168,9 @@ export class IngredientManagerComponent implements OnInit {
       ? this.api.increaseIngredientStock(ingredient.id, delta)
       : this.api.decreaseIngredientStock(ingredient.id, Math.abs(delta));
     request.subscribe(updated => {
-      ingredient.stock = updated.stock;
+      this.ingredients.update(ingredients => ingredients.map(item =>
+        item.id === updated.id ? updated : item
+      ));
     });
   }
 
@@ -178,7 +180,9 @@ export class IngredientManagerComponent implements OnInit {
     ingredient.stock = stock;
     const payload: Ingredient = { ...ingredient, stock };
     this.api.updateIngredient(ingredient.id, payload).subscribe(updated => {
-      ingredient.stock = updated.stock;
+      this.ingredients.update(ingredients => ingredients.map(item =>
+        item.id === updated.id ? updated : item
+      ));
     });
   }
 

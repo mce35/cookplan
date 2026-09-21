@@ -39,6 +39,7 @@ import { ConfirmDialogComponent } from './confirm-dialog';
             <tr>
               <th>Nom</th>
               <th>Unité</th>
+              <th>Stock</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -49,6 +50,14 @@ import { ConfirmDialogComponent } from './confirm-dialog';
 
               <td *ngIf="editIndex !== ing">{{ ing.unit }}</td>
               <td *ngIf="editIndex === ing"><input [(ngModel)]="editUnit" class="form-control"></td>
+
+              <td>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Stock">
+                  <button class="btn btn-outline-primary" (click)="changeStock(ing, -1)" [disabled]="(ing.stock ?? 0) === 0">-</button>
+                  <input type="number" min="0" class="stock-input" [(ngModel)]="ing.stock" (change)="updateStock(ing)" aria-label="Stock en cours">
+                  <button class="btn btn-outline-primary" (click)="changeStock(ing, 1)">+</button>
+                </div>
+              </td>
 
               <td>
                 <div *ngIf="editIndex !== ing">
@@ -66,7 +75,24 @@ import { ConfirmDialogComponent } from './confirm-dialog';
         </table>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .stock-input {
+      width: 4rem;
+      padding: 0.25rem 0.5rem;
+      text-align: center;
+      border: 1px solid #0d6efd;
+      border-radius: 0;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .stock-input::-webkit-inner-spin-button,
+    .stock-input::-webkit-outer-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
+  `]
 })
 export class IngredientManagerComponent implements OnInit {
   ingredients: Ingredient[] = [];
@@ -122,10 +148,36 @@ export class IngredientManagerComponent implements OnInit {
 
   saveEdit(id: number | undefined) {
     if (!id) return;
-    const payload: Ingredient = { id, name: this.editName.trim(), unit: this.editUnit.trim() } as Ingredient;
+    const ingredient = this.ingredients.find(item => item.id === id);
+    const payload: Ingredient = {
+      id,
+      name: this.editName.trim(),
+      unit: this.editUnit.trim(),
+      stock: ingredient?.stock ?? 0
+    };
     this.api.updateIngredient(id, payload).subscribe(() => {
       this.cancelEdit();
       this.reload();
+    });
+  }
+
+  changeStock(ingredient: Ingredient, delta: number) {
+    if (!ingredient.id) return;
+    const request = delta > 0
+      ? this.api.increaseIngredientStock(ingredient.id, delta)
+      : this.api.decreaseIngredientStock(ingredient.id, Math.abs(delta));
+    request.subscribe(updated => {
+      ingredient.stock = updated.stock;
+    });
+  }
+
+  updateStock(ingredient: Ingredient) {
+    if (!ingredient.id) return;
+    const stock = Math.max(0, Number(ingredient.stock) || 0);
+    ingredient.stock = stock;
+    const payload: Ingredient = { ...ingredient, stock };
+    this.api.updateIngredient(ingredient.id, payload).subscribe(updated => {
+      ingredient.stock = updated.stock;
     });
   }
 

@@ -22,6 +22,13 @@ def run_migrations():
                     # Add note column if it doesn't exist
                     connection.execute(text('ALTER TABLE planning ADD COLUMN note VARCHAR'))
                     print("Migration: Added 'note' column to planning table")
+
+            if 'ingredients' in tables:
+                ingredient_columns = [col['name'] for col in inspector.get_columns('ingredients')]
+
+                if 'stock' not in ingredient_columns:
+                    connection.execute(text('ALTER TABLE ingredients ADD COLUMN stock INTEGER DEFAULT 0'))
+                    print("Migration: Added 'stock' column to ingredients table")
     except Exception as e:
         print(f"Migration warning: {e}")
         # Migrations may fail if table doesn't exist yet, which is fine

@@ -44,6 +44,14 @@ export class ApiService {
     return this.http.put<Ingredient>(`${this.apiUrl}/ingredients/${id}`, ingredient);
   }
 
+  increaseIngredientStock(id: number, amount: number): Observable<Ingredient> {
+    return this.http.post<Ingredient>(`${this.apiUrl}/ingredients/${id}/stock/increase`, { amount });
+  }
+
+  decreaseIngredientStock(id: number, amount: number): Observable<Ingredient> {
+    return this.http.post<Ingredient>(`${this.apiUrl}/ingredients/${id}/stock/decrease`, { amount });
+  }
+
   deleteIngredient(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/ingredients/${id}`);
   }

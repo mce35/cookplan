@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from datetime import date
 
@@ -21,6 +21,7 @@ class Token(BaseModel):
 class IngredientBase(BaseModel):
     name: str
     unit: str
+    stock: int = Field(default=0, ge=0)
 
 class IngredientCreate(IngredientBase):
     pass
@@ -28,6 +29,9 @@ class IngredientCreate(IngredientBase):
 class Ingredient(IngredientBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
+
+class StockAdjustment(BaseModel):
+    amount: int = Field(gt=0)
 
 class RecipeIngredientBase(BaseModel):
     ingredient_id: int

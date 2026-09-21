@@ -88,6 +88,41 @@ def read_ingredients(skip: int = 0, limit: int = 1000, db: Session = Depends(get
     ingredients = db.query(models.Ingredient).order_by(models.Ingredient.name).offset(skip).limit(limit).all()
     return ingredients
 
+@app.put("/ingredients/{ingredient_id}", response_model=schemas.Ingredient)
+def update_ingredient(ingredient_id: int, ingredient: schemas.Ingredient, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
+    db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
+    if db_ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+
+    db_ingredient.name = ingredient.name
+    db_ingredient.unit = ingredient.unit
+    db_ingredient.stock = ingredient.stock
+    db.commit()
+    db.refresh(db_ingredient)
+    return db_ingredient
+
+@app.post("/ingredients/{ingredient_id}/stock/increase", response_model=schemas.Ingredient)
+def increase_ingredient_stock(ingredient_id: int, adjustment: schemas.StockAdjustment, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
+    db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
+    if db_ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+
+    db_ingredient.stock += adjustment.amount
+    db.commit()
+    db.refresh(db_ingredient)
+    return db_ingredient
+
+@app.post("/ingredients/{ingredient_id}/stock/decrease", response_model=schemas.Ingredient)
+def decrease_ingredient_stock(ingredient_id: int, adjustment: schemas.StockAdjustment, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
+    db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
+    if db_ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+
+    db_ingredient.stock = max(0, db_ingredient.stock - adjustment.amount)
+    db.commit()
+    db.refresh(db_ingredient)
+    return db_ingredient
+
 @app.delete("/ingredients/{ingredient_id}")
 def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db), user_id: int = Depends(auth.verify_token)):
     db_ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()

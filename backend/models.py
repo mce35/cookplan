@@ -45,6 +45,7 @@ class Ingredient(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     unit = Column(String) # e.g., g, ml, unit
+    stock = Column(Integer, nullable=False, default=0)
 
     recipe_ingredients = relationship("RecipeIngredient", back_populates="ingredient")
 

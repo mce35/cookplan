@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -95,7 +95,7 @@ import { ConfirmDialogComponent } from './confirm-dialog';
   `]
 })
 export class IngredientManagerComponent implements OnInit {
-  ingredients: Ingredient[] = [];
+  ingredients = signal<Ingredient[]>([]);
   newName = '';
   newUnit = '';
   searchTerm = '';
@@ -112,14 +112,15 @@ export class IngredientManagerComponent implements OnInit {
 
   get filteredIngredients(): Ingredient[] {
     const term = this.searchTerm.trim().toLowerCase();
-    if (!term) return this.ingredients;
-    return this.ingredients.filter(ingredient =>
+    const ingredients = this.ingredients();
+    if (!term) return ingredients;
+    return ingredients.filter(ingredient =>
       (ingredient.name || '').toLowerCase().includes(term)
     );
   }
 
   reload() {
-    this.api.getIngredients().subscribe(data => this.ingredients = data || []);
+    this.api.getIngredients().subscribe(data => this.ingredients.set(data || []));
   }
 
   add() {
@@ -148,7 +149,7 @@ export class IngredientManagerComponent implements OnInit {
 
   saveEdit(id: number | undefined) {
     if (!id) return;
-    const ingredient = this.ingredients.find(item => item.id === id);
+    const ingredient = this.ingredients().find(item => item.id === id);
     const payload: Ingredient = {
       id,
       name: this.editName.trim(),

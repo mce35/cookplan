@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -30,18 +30,18 @@ import { ShoppingItem } from '../../models/models';
         </div>
       </div>
 
-      <div *ngIf="items.length > 0" class="card shadow-sm">
+      <div *ngIf="items().length > 0" class="card shadow-sm">
         <div class="card-header bg-success text-white">
-            <strong>{{ items.length }} ingrédients nécessaires</strong>
+            <strong>{{ items().length }} ingrédients nécessaires</strong>
         </div>
         <ul class="list-group list-group-flush">
-          <li *ngFor="let item of items" class="list-group-item d-flex justify-content-between">
+          <li *ngFor="let item of items()" class="list-group-item d-flex justify-content-between">
             <span>{{ item.name }} <span class="recipes-names">({{ item.recipe_names }})</span></span>
             <span><strong>{{ item.quantity }} {{ item.unit }}</strong></span>
           </li>
         </ul>
       </div>
-      <div *ngIf="items.length === 0 && hasGenerated" class="alert alert-info">
+      <div *ngIf="items().length === 0 && hasGenerated" class="alert alert-info">
         Aucun ingrédient pour cette période.
       </div>
     </div>
@@ -55,7 +55,7 @@ export class ShoppingListComponent implements OnInit {
   startDate: string = '';
   endDate: string = '';
   persons: number = 1;
-  items: ShoppingItem[] = [];
+  items = signal<ShoppingItem[]>([]);
   hasGenerated = false;
 
   constructor(private apiService: ApiService, private route: ActivatedRoute) {}
@@ -88,7 +88,7 @@ export class ShoppingListComponent implements OnInit {
     if (!this.startDate || !this.endDate) return;
     const persons = Number(this.persons) || 1;
     this.apiService.getShoppingList(this.startDate, this.endDate, persons).subscribe(data => {
-      this.items = data;
+      this.items.set(data);
       this.hasGenerated = true;
     });
   }

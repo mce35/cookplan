@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
 import { Ingredient } from '../../models/models';
 import { ConfirmDialogComponent } from './confirm-dialog';
@@ -11,7 +12,7 @@ import { ConfirmDialogComponent } from './confirm-dialog';
 @Component({
   selector: 'app-ingredient-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatSnackBarModule],
   template: `
     <div class="container">
       <h2>Gestion des ingrédients</h2>
@@ -104,7 +105,12 @@ export class IngredientManagerComponent implements OnInit {
   editName = '';
   editUnit = '';
 
-  constructor(private api: ApiService, private router: Router, private dialog: MatDialog) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.reload();
@@ -120,7 +126,10 @@ export class IngredientManagerComponent implements OnInit {
   }
 
   reload() {
-    this.api.getIngredients().subscribe(data => this.ingredients.set(data || []));
+    this.api.getIngredients().subscribe({
+      next: data => this.ingredients.set(data || []),
+      error: () => this.showError('Impossible de charger les ingrédients')
+    });
   }
 
   add() {
@@ -128,10 +137,13 @@ export class IngredientManagerComponent implements OnInit {
     const unit = (this.newUnit || '').trim();
     if (!name) return;
     const payload: Ingredient = { id: 0, name, unit } as Ingredient;
-    this.api.createIngredient(payload).subscribe(() => {
-      this.newName = '';
-      this.newUnit = '';
-      this.reload();
+    this.api.createIngredient(payload).subscribe({
+      next: () => {
+        this.newName = '';
+        this.newUnit = '';
+        this.reload();
+      },
+      error: () => this.showError("Impossible de créer l'ingrédient")
     });
   }
 
@@ -156,9 +168,12 @@ export class IngredientManagerComponent implements OnInit {
       unit: this.editUnit.trim(),
       stock: ingredient?.stock ?? 0
     };
-    this.api.updateIngredient(id, payload).subscribe(() => {
-      this.cancelEdit();
-      this.reload();
+    this.api.updateIngredient(id, payload).subscribe({
+      next: () => {
+        this.cancelEdit();
+        this.reload();
+      },
+      error: () => this.showError("Impossible de modifier l'ingrédient")
     });
   }
 
@@ -167,10 +182,11 @@ export class IngredientManagerComponent implements OnInit {
     const request = delta > 0
       ? this.api.increaseIngredientStock(ingredient.id, delta)
       : this.api.decreaseIngredientStock(ingredient.id, Math.abs(delta));
-    request.subscribe(updated => {
-      this.ingredients.update(ingredients => ingredients.map(item =>
+    request.subscribe({
+      next: updated => this.ingredients.update(ingredients => ingredients.map(item =>
         item.id === updated.id ? updated : item
-      ));
+      )),
+      error: () => this.showError('Impossible de mettre à jour le stock')
     });
   }
 
@@ -179,10 +195,14 @@ export class IngredientManagerComponent implements OnInit {
     const stock = Math.max(0, Number(ingredient.stock) || 0);
     ingredient.stock = stock;
     const payload: Ingredient = { ...ingredient, stock };
-    this.api.updateIngredient(ingredient.id, payload).subscribe(updated => {
-      this.ingredients.update(ingredients => ingredients.map(item =>
+    this.api.updateIngredient(ingredient.id, payload).subscribe({
+      next: updated => this.ingredients.update(ingredients => ingredients.map(item =>
         item.id === updated.id ? updated : item
-      ));
+      )),
+      error: () => {
+        this.showError('Impossible de mettre à jour le stock');
+        this.reload();
+      }
     });
   }
 
@@ -195,8 +215,18 @@ export class IngredientManagerComponent implements OnInit {
     });
     ref.afterClosed().subscribe(result => {
       if (result) {
-        this.api.deleteIngredient(id).subscribe(() => this.reload());
+        this.api.deleteIngredient(id).subscribe({
+          next: () => this.reload(),
+          error: () => this.showError("Impossible de supprimer l'ingrédient")
+        });
       }
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'OK', {
+      duration: 4000,
+      panelClass: ['custom-snackbar']
     });
   }
 

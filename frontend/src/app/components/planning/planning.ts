@@ -122,7 +122,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     </div>
                   </div>
                 </div>
-                <div class="recipe-input-row">
+                <div class="recipe-input-row note-input-row">
                   <input
                     #noteMidiInput
                     type="text"
@@ -134,6 +134,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     (keydown.enter)="saveNote(day, 'midi')"
                     placeholder="-- Note --"
                   />
+                  <button *ngIf="getNoteUrl(day, 'midi') as noteUrl" type="button" class="btn btn-sm btn-outline-info p-0" (click)="openNoteUrl(noteUrl)" aria-label="Ouvrir le lien de la note dans un nouvel onglet">
+                    <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
+                  </button>
                 </div>
             </div>
           </div>
@@ -199,7 +202,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     </div>
                   </div>
                 </div>
-                <div class="recipe-input-row">
+                <div class="recipe-input-row note-input-row">
                   <input
                     #noteSoirInput
                     type="text"
@@ -211,6 +214,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
                     (keydown.enter)="saveNote(day, 'soir')"
                     placeholder="-- Note --"
                   />
+                  <button *ngIf="getNoteUrl(day, 'soir') as noteUrl" type="button" class="btn btn-sm btn-outline-info p-0" (click)="openNoteUrl(noteUrl)" aria-label="Ouvrir le lien de la note dans un nouvel onglet">
+                    <mat-icon style="vertical-align: middle;">arrow_forward</mat-icon>
+                  </button>
                 </div>
             </div>
           </div>
@@ -272,6 +278,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .meal-section { margin-bottom: 10px; }
     .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
     .recipe-select-group .recipe-input-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; position: relative; }
+    .recipe-select-group .note-input-row { flex-wrap: nowrap; }
+    .recipe-select-group .note-input-row input { min-width: 0; flex: 1 1 auto; }
     .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: nowrap; align-items: center; gap: 6px; position: relative; }
     .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; max-width: 100%; }
     .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; white-space: nowrap; }
@@ -610,6 +618,16 @@ export class PlanningComponent implements OnInit {
     const dateStr = this.formatDate(date);
     const plan = this.planningData().find(p => p.date === dateStr && p.meal_type === mealType);
     return plan?.note ?? '';
+  }
+
+  getNoteUrl(date: Date, mealType: string): string | null {
+    const note = this.getNoteText(date, mealType).trim();
+    const match = note.match(/^https?:\/\/\S+/i);
+    return match?.[0] ?? null;
+  }
+
+  openNoteUrl(url: string) {
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   activateNote(date: Date, mealType: string) {

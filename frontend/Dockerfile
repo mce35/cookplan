@@ -4,7 +4,7 @@ FROM node:26 as build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --global npm@12.2.2 && npm install
 
 COPY . .
 RUN npm run build
@@ -15,7 +15,7 @@ FROM node:26 as development
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --global npm@12.2.2 && npm install
 
 COPY . .
 CMD ["npm", "run", "start"]

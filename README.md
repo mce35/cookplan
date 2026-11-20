@@ -18,8 +18,11 @@ Cookplan is a meal-planning application for managing recipes, planning meals, an
 To run the full application with Docker Compose:
 
 ```bash
-docker compose up --build
+docker compose build && docker compose up
 ```
+
+!!!Note
+Use `--no-cache` to rebuild images without using docker cache
 
 The frontend is available at `http://localhost:9999`; the API is exposed at `http://localhost:8123`.
 

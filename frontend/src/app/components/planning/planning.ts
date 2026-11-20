@@ -53,9 +53,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
              class="day-card"
              [class.selecting]="isSelectingShopping"
              [class.selected-range]="isDateInRange(day)"
+             [class.shopping-start]="isShoppingStart(day)"
              [class.past-day]="isPastDay(day)"
              [class.today-day]="isToday(day)"
              [class.upcoming-day]="isUpcomingDay(day)"
+             (mouseenter)="previewShoppingEnd(day)"
+             (mouseleave)="clearShoppingPreview()"
              (click)="selectDate(day)">
           <div class="day-header text-center">
             <strong>{{ day | date:'EEEE d MMM' : undefined : 'fr-FR' }}</strong>
@@ -244,7 +247,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     }
     .day-card.selecting { cursor: pointer; }
     .day-card.selecting:hover { background-color: #e9ecef; }
-    .day-card.selected-range { border: 2px solid #28a745; background-color: #d4edda; }
+    .day-card.selected-range { border: 1px solid #9b7acb; background-color: #eee7f8; }
+    .day-card.selecting.selected-range,
+    .day-card.selecting.selected-range:hover { border-color: #9b7acb; background-color: #eee7f8; }
+    .day-card.shopping-start,
+    .day-card.selecting.shopping-start,
+    .day-card.selecting.shopping-start:hover { border-color: #6f42c1; background-color: #d9c8f0; }
 
     .day-header {
       background-color: #e2f3e5;
@@ -312,6 +320,7 @@ export class PlanningComponent implements OnInit {
   isSelectingShopping = false;
   shoppingStart: Date | null = null;
   shoppingEnd: Date | null = null;
+  shoppingPreviewEnd: Date | null = null;
   persons: number = 4;
 
   constructor(private apiService: ApiService, private router: Router, private snackBar: MatSnackBar) {}
@@ -740,6 +749,17 @@ export class PlanningComponent implements OnInit {
     this.isSelectingShopping = !this.isSelectingShopping;
     this.shoppingStart = null;
     this.shoppingEnd = null;
+    this.shoppingPreviewEnd = null;
+  }
+
+  previewShoppingEnd(day: Date) {
+    if (this.isSelectingShopping && this.shoppingStart && !this.shoppingEnd && day.getTime() !== this.shoppingStart.getTime()) {
+      this.shoppingPreviewEnd = new Date(day);
+    }
+  }
+
+  clearShoppingPreview() {
+    this.shoppingPreviewEnd = null;
   }
 
   selectDate(day: Date) {
@@ -763,12 +783,20 @@ export class PlanningComponent implements OnInit {
         }
       });
       this.isSelectingShopping = false;
+      this.shoppingPreviewEnd = null;
     }
   }
 
   isDateInRange(day: Date): boolean {
     if (!this.shoppingStart) return false;
-    if (!this.shoppingEnd) return day.getTime() === this.shoppingStart.getTime();
-    return day >= this.shoppingStart && day <= this.shoppingEnd;
+    const rangeEnd = this.shoppingEnd ?? this.shoppingPreviewEnd;
+    if (!rangeEnd) return day.getTime() === this.shoppingStart.getTime();
+    const start = Math.min(this.shoppingStart.getTime(), rangeEnd.getTime());
+    const end = Math.max(this.shoppingStart.getTime(), rangeEnd.getTime());
+    return day.getTime() >= start && day.getTime() <= end;
+  }
+
+  isShoppingStart(day: Date): boolean {
+    return this.isSelectingShopping && !!this.shoppingStart && day.getTime() === this.shoppingStart.getTime();
   }
 }

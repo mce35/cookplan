@@ -26,7 +26,7 @@ import { RecipeShort, Ingredient } from '../../models/models';
 
       <div *ngIf="results().length > 0" class="list-group">
         <a *ngFor="let recipe of results()" [routerLink]="['/recipes', recipe.id]" class="list-group-item list-group-item-action">
-          {{ recipe.name }} <span class="badge badge-secondary float-right">{{ recipe.recipe_type }}</span>
+          {{ recipe.name }} <span class="badge recipe-type float-right" [ngClass]="recipeTypeClass(recipe.recipe_type)">{{ recipe.recipe_type }}</span>
         </a>
       </div>
 
@@ -51,6 +51,9 @@ import { RecipeShort, Ingredient } from '../../models/models';
   `,
   styles: [`
     .container { margin-top: 20px; }
+    .recipe-type.type-plat { color: #084298; background-color: #cfe2ff; }
+    .recipe-type.type-dessert { color: #842029; background-color: #f8d7da; }
+    .recipe-type.type-accompagnement { color: #0f5132; background-color: #d1e7dd; }
   `]
 })
 export class RecipeSearchComponent implements OnInit {
@@ -61,6 +64,15 @@ export class RecipeSearchComponent implements OnInit {
   allIngredients = signal<Ingredient[]>([]);
   currentPage = signal<number>(1);
   readonly pageSize = 10;
+
+  recipeTypeClass(type: string): string {
+    switch (type) {
+      case 'plat': return 'type-plat';
+      case 'dessert': return 'type-dessert';
+      case 'accompagnement': return 'type-accompagnement';
+      default: return 'type-default';
+    }
+  }
 
   pageCount = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize)));
   pages = computed(() => Array.from({ length: this.pageCount() }, (_, i) => i + 1));

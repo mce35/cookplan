@@ -49,10 +49,10 @@ import { ApiService } from '../../services/api.service';
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #f5f5f5;
+      background-color: #111827;
     }
     .login-card {
-      background: white;
+      background: #1f2937;
       padding: 30px;
       border-radius: 5px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -62,7 +62,7 @@ import { ApiService } from '../../services/api.service';
     h1 {
       text-align: center;
       margin-bottom: 30px;
-      color: #333;
+      color: #e5e7eb;
     }
     .form-group {
       margin-bottom: 15px;
@@ -71,12 +71,14 @@ import { ApiService } from '../../services/api.service';
       display: block;
       margin-bottom: 5px;
       font-weight: 500;
-      color: #555;
+      color: #cbd5e1;
     }
     .form-control {
       width: 100%;
       padding: 8px 12px;
-      border: 1px solid #ddd;
+      border: 1px solid #3b485c;
+      background-color: #182232;
+      color: #e5e7eb;
       border-radius: 4px;
       font-size: 14px;
     }
@@ -109,9 +111,9 @@ import { ApiService } from '../../services/api.service';
       border-radius: 4px;
     }
     .alert-danger {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background-color: #4a2028;
+      color: #f5b8bf;
+      border: 1px solid #813542;
     }
   `]
 })

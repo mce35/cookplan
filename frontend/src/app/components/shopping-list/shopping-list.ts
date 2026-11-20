@@ -48,7 +48,7 @@ import { ShoppingItem } from '../../models/models';
   `,
   styles: [`
     .container { margin-top: 20px; }
-    .recipes-names { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
+    .recipes-names { font-weight: bold; font-size: 0.75rem; color: #aab4c3; margin-bottom: 2px; }
   `]
 })
 export class ShoppingListComponent implements OnInit {

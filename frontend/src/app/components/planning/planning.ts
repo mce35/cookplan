@@ -239,42 +239,43 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
       min-width: 0;
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #c3e6cb;
+      border: 1px solid #3b485c;
       border-radius: 5px;
       padding: 5px;
-      background-color: #f8fff9;
+      background-color: #1f2937;
+      color: #e5e7eb;
       min-width: 150px;
     }
     .day-card.selecting { cursor: pointer; }
-    .day-card.selecting:hover { background-color: #e9ecef; }
-    .day-card.selected-range { border: 1px solid #9b7acb; background-color: #eee7f8; }
+    .day-card.selecting:hover { background-color: #273449; }
+    .day-card.selected-range { border: 1px solid #9b7acb; background-color: #3b2c55; }
     .day-card.selecting.selected-range,
-    .day-card.selecting.selected-range:hover { border-color: #9b7acb; background-color: #eee7f8; }
+    .day-card.selecting.selected-range:hover { border-color: #9b7acb; background-color: #3b2c55; }
     .day-card.shopping-start,
     .day-card.selecting.shopping-start,
-    .day-card.selecting.shopping-start:hover { border-color: #6f42c1; background-color: #d9c8f0; }
+    .day-card.selecting.shopping-start:hover { border-color: #6f42c1; background-color: #4a3670; }
 
     .day-header {
-      background-color: #e2f3e5;
+      background-color: #24364a;
       margin: -5px -5px 10px -5px;
       padding: 5px;
-      border-bottom: 1px solid #c3e6cb;
+      border-bottom: 1px solid #3b485c;
       font-size: 0.85rem;
     }
     .day-card.past-day {
-      background-color: #f0f0f0;
-      border-color: #ced4da;
-      color: #6c757d;
+      background-color: #202938;
+      border-color: #465268;
+      color: #aab4c3;
     }
     .day-card.today-day {
-      background-color: #fff3cd;
-      border-color: #ffeeba;
-      color: #856404;
+      background-color: #493a1e;
+      border-color: #8a6d3b;
+      color: #ffe08a;
     }
     .day-card.upcoming-day {
-      background-color: #d4edda;
-      border-color: #c3e6cb;
-      color: #155724;
+      background-color: #1d3b31;
+      border-color: #39775a;
+      color: #b7e4c7;
     }
     .day-card.today-day .day-header,
     .day-card.past-day .day-header,
@@ -284,16 +285,16 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
       margin-bottom: 10px;
     }
     .meal-section { margin-bottom: 10px; }
-    .meal-label { font-weight: bold; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
+    .meal-label { font-weight: bold; font-size: 0.75rem; color: #aab4c3; margin-bottom: 2px; }
     .recipe-select-group .recipe-input-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; position: relative; }
     .recipe-select-group .note-input-row { flex-wrap: nowrap; }
     .recipe-select-group .note-input-row input { min-width: 0; flex: 1 1 auto; }
     .recipe-select-group .input-suggestion-box { display: flex; flex: 1 1 100%; flex-wrap: nowrap; align-items: center; gap: 6px; position: relative; }
     .recipe-select-group .input-suggestion-box input { min-width: 0; flex: 1 1 auto; max-width: 100%; }
     .recipe-select-group .input-suggestion-box button { flex: 0 0 auto; white-space: nowrap; }
-    .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 300px; font-size: 0.75rem; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+    .recipe-select-group .suggestion-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; max-height: 300px; font-size: 0.75rem; overflow-y: auto; color: #e5e7eb; background: #1f2937; border: 1px solid #465268; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.35); }
     .recipe-select-group .suggestion-item { width: 100%; text-align: left; border: none; border-radius: 10px; background: transparent; padding: 0.4rem 0.5rem; cursor: pointer; }
-    .recipe-select-group .suggestion-item:hover { background-color: #f1f1f1; }
+    .recipe-select-group .suggestion-item:hover { background-color: #273449; }
     .recipe-select-group .suggestion-item.highlighted { background-color: #007bff; }
     .recipe-select-group .recipe-autocomplete { font-size: 0.75rem; }
     .recipe-select-group .recipe-dropdown-button { min-width: 34px; }

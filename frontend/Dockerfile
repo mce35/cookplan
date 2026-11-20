@@ -4,7 +4,7 @@ FROM node:26 AS build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --global npm@12.2.2 && npm install
+RUN npm install --global npm@12.2.3 && npm install
 
 COPY . .
 RUN npm run build

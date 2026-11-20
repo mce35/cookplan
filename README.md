@@ -42,8 +42,8 @@ From the repository root, set an image version and build both production images:
 
 ```bash
 VERSION=1.1.1
-docker build ./backend -f backend/Dockerfile --tag cookplan-backend:$VERSION
-docker build ./frontend -f frontend/Dockerfile --target production --tag cookplan-frontend:$VERSION
+docker build --no-cache ./backend -f backend/Dockerfile --tag cookplan-backend:$VERSION
+docker build --no-cache ./frontend -f frontend/Dockerfile --target production --tag cookplan-frontend:$VERSION
 ```
 
 The frontend production image serves the Angular build with Nginx. The backend image runs the API with Uvicorn.

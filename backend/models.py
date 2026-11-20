@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Text, Table
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Text, Table, event
 from sqlalchemy.orm import relationship
 from database import Base
+from text_search import normalize_search_text
 
 # Junction table for recipe dependencies
 recipe_dependencies = Table(
@@ -44,10 +45,17 @@ class Ingredient(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    normalized_name = Column(String, nullable=False, default="", index=True)
     unit = Column(String) # e.g., g, ml, unit
     stock = Column(Integer, nullable=False, default=0)
 
     recipe_ingredients = relationship("RecipeIngredient", back_populates="ingredient")
+
+
+@event.listens_for(Ingredient, "before_insert")
+@event.listens_for(Ingredient, "before_update")
+def update_normalized_ingredient_name(mapper, connection, ingredient):
+    ingredient.normalized_name = normalize_search_text(ingredient.name)
 
 class RecipeIngredient(Base):
     __tablename__ = "recipe_ingredients"

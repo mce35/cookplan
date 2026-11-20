@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response, Query
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
 import models, schemas, database, migrations, auth
+from text_search import normalize_search_text
 from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -313,9 +313,10 @@ def get_recipes_by_ingredient(
     db: Session = Depends(get_db),
     user_id: int = Depends(auth.verify_token)
 ):
+    normalized_term = normalize_search_text(ingredient_name)
     query = db.query(models.Recipe).join(models.RecipeIngredient).join(models.Ingredient).filter(
-        func.lower(models.Ingredient.name).like(func.lower(f"%{ingredient_name}%"))
-    ).order_by(models.Recipe.name)
+        models.Ingredient.normalized_name.contains(normalized_term, autoescape=True)
+    ).distinct().order_by(models.Recipe.name)
     total = query.count()
     response.headers["X-Total-Count"] = str(total)
     response.headers["Access-Control-Expose-Headers"] = "X-Total-Count"

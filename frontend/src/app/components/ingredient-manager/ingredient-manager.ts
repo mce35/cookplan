@@ -8,6 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
 import { Ingredient } from '../../models/models';
 import { ConfirmDialogComponent } from './confirm-dialog';
+import { matchesSearchText } from '../../utils/text-filter';
 
 @Component({
   selector: 'app-ingredient-manager',
@@ -117,12 +118,7 @@ export class IngredientManagerComponent implements OnInit {
   }
 
   get filteredIngredients(): Ingredient[] {
-    const term = this.searchTerm.trim().toLowerCase();
-    const ingredients = this.ingredients();
-    if (!term) return ingredients;
-    return ingredients.filter(ingredient =>
-      (ingredient.name || '').toLowerCase().includes(term)
-    );
+    return this.ingredients().filter(ingredient => matchesSearchText(ingredient.name, this.searchTerm));
   }
 
   reload() {

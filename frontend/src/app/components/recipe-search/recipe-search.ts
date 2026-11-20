@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { RecipeShort, Ingredient } from '../../models/models';
+import { normalizeSearchText } from '../../utils/text-filter';
 
 @Component({
   selector: 'app-recipe-search',
@@ -102,7 +103,7 @@ export class RecipeSearchComponent implements OnInit {
       return;
     }
 
-    this.apiService.searchRecipesByIngredient(term, page, this.pageSize).subscribe(response => {
+    this.apiService.searchRecipesByIngredient(normalizeSearchText(term), page, this.pageSize).subscribe(response => {
       this.results.set(response.body ?? []);
       this.totalCount.set(Number(response.headers.get('X-Total-Count') ?? '0'));
       this.currentPage.set(page);

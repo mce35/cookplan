@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Recipe, Planning } from '../../models/models';
+import { matchesSearchText } from '../../utils/text-filter';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
@@ -517,10 +518,10 @@ export class PlanningComponent implements OnInit {
 
   getSuggestions(date: Date, mealType: string, recipeType: 'main' | 'side') {
     const key = this.getInputKey(date, mealType, recipeType);
-    const text = this.recipeInputValues[key]?.trim().toLowerCase() ?? '';
+    const text = this.recipeInputValues[key]?.trim() ?? '';
     const wantedType = recipeType === 'main' ? 'plat' : 'accompagnement';
     return this.recipes()
-      .filter(r => r.recipe_type === wantedType && r.name.toLowerCase().includes(text))
+      .filter(r => r.recipe_type === wantedType && matchesSearchText(r.name, text))
       .slice(0, 300);
   }
 

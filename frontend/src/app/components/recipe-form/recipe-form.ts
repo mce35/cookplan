@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, signal } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewChildren, QueryList, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
@@ -136,6 +136,7 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class RecipeFormComponent implements OnInit {
   @ViewChild('instructionsTextarea') instructionsTextarea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChildren('ingredientInput') ingredientInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   recipeForm: FormGroup;
   isEdit = false;
@@ -223,6 +224,7 @@ export class RecipeFormComponent implements OnInit {
     if (value) {
       this.ingredientInputValues[this.ingredients.length - 1] = value;
     }
+    setTimeout(() => this.ingredientInputs.last?.nativeElement.focus());
   }
 
   removeIngredient(index: number) {
